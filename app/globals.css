@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
 /* ================================
-   БАЗА (переменные Supabase-like)
+   БАЗА (цвета)
 ================================ */
 :root {
-  --bg: #0f1113;
-  --bg-soft: #15181c;
+  --background: #0f1113;
+  --foreground: #e6e8ea;
+
   --card: #1a1f24;
   --border: #262b31;
 
@@ -15,28 +16,22 @@
 
   --accent: #3ecf8e;
   --accent-hover: #34b97f;
-
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
 }
 
 /* ================================
-   СВЕТЛАЯ ТЕМА (как Supabase)
+   СВЕТЛАЯ ТЕМА
 ================================ */
 @media (prefers-color-scheme: light) {
   :root {
-    --bg: #f8fafb;
-    --bg-soft: #ffffff;
+    --background: #f8fafb;
+    --foreground: #111827;
+
     --card: #ffffff;
     --border: #e5e7eb;
 
     --text-primary: #111827;
     --text-secondary: #4b5563;
     --text-muted: #9ca3af;
-
-    --accent: #3ecf8e;
-    --accent-hover: #34b97f;
   }
 }
 
@@ -44,52 +39,26 @@
    BODY
 ================================ */
 body {
-  background: var(--bg);
-  color: var(--text-primary);
+  background: var(--background);
+  color: var(--foreground);
   font-family: Inter, system-ui, -apple-system, sans-serif;
-  margin: 0;
 }
 
 /* ================================
-   СЕТКА (ВОТ ТВОЙ ГЛАВНЫЙ ФИКС)
+   КОМПОНЕНТЫ
 ================================ */
-.app-grid {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: 1fr;
-}
 
-/* планшет */
-@media (min-width: 768px) {
-  .app-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* десктоп */
-@media (min-width: 1024px) {
-  .app-grid {
-    grid-template-columns: 1.05fr 1.15fr;
-  }
-}
-
-/* ================================
-   КАРТОЧКИ
-================================ */
 .app-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   padding: 16px;
 }
 
-/* ================================
-   INPUT
-================================ */
 .app-input {
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 6px;
   padding: 8px 10px;
   color: var(--text-primary);
 }
@@ -99,13 +68,10 @@ body {
   border-color: var(--accent);
 }
 
-/* ================================
-   КНОПКА
-================================ */
 .app-button-primary {
   background: var(--accent);
   color: #000;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   padding: 10px 16px;
   font-weight: 500;
 }
@@ -117,6 +83,7 @@ body {
 /* ================================
    ТЕКСТ
 ================================ */
+
 .app-page-title {
   font-size: 28px;
   font-weight: 600;

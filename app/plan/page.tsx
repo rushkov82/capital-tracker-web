@@ -190,7 +190,7 @@ export default function PlanPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 lg:px-8">
       <div>
         <h1 className="app-page-title">План</h1>
         <p className="app-page-subtitle">
@@ -198,7 +198,8 @@ export default function PlanPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.05fr_1.15fr]">
+      {/* 🔥 ВОТ ГЛАВНЫЙ ФИКС */}
+      <div className="grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-[1.05fr_1.15fr]">
         <MainParameters
           cardClass="app-card"
           commonInputClass="app-input"
