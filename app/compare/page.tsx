@@ -1,0 +1,203 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { fetchOperations, type Operation } from "@/lib/operations";
+import { buildFactDistribution, getTotalFactAmount } from "@/lib/portfolio";
+import {
+  DEFAULT_PLAN_SETTINGS,
+  getPlanAllocation,
+  loadPlanSettings,
+  PLAN_STORAGE_KEY,
+  PLAN_UPDATED_EVENT,
+  type PlanSettings,
+} from "@/lib/plan";
+import { formatPercent } from "@/lib/calculations";
+
+type CompareRow = {
+  category: string;
+  planPercent: number;
+  factPercent: number;
+  deltaPercent: number;
+};
+
+export default function ComparePage() {
+  const [operations, setOperations] = useState<Operation[]>([]);
+  const [planSettings, setPlanSettings] = useState<PlanSettings>(
+    DEFAULT_PLAN_SETTINGS
+  );
+  const [errorText, setErrorText] = useState("");
+
+  useEffect(() => {
+    setPlanSettings(loadPlanSettings());
+    void loadOperations();
+
+    function syncPlanSettings() {
+      setPlanSettings(loadPlanSettings());
+    }
+
+    function handleStorage(event: StorageEvent) {
+      if (event.key === PLAN_STORAGE_KEY) {
+        syncPlanSettings();
+      }
+    }
+
+    function handlePlanUpdated() {
+      syncPlanSettings();
+    }
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener(PLAN_UPDATED_EVENT, handlePlanUpdated);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(PLAN_UPDATED_EVENT, handlePlanUpdated);
+    };
+  }, []);
+
+  async function loadOperations() {
+    try {
+      const data = await fetchOperations();
+      setOperations(data);
+    } catch (error) {
+      console.log("Ошибка загрузки:", error);
+      setErrorText(
+        error instanceof Error ? error.message : "Ошибка загрузки операций"
+      );
+    }
+  }
+
+  const factItems = useMemo(() => {
+    return buildFactDistribution(operations);
+  }, [operations]);
+
+  const totalFactAmount = useMemo(() => {
+    return getTotalFactAmount(factItems);
+  }, [factItems]);
+
+  const planItems = useMemo(() => {
+    return getPlanAllocation(planSettings);
+  }, [planSettings]);
+
+  const compareRows = useMemo<CompareRow[]>(() => {
+    return planItems.map((planItem) => {
+      const factItem = factItems.find(
+        (item) => item.category === planItem.category
+      );
+
+      const factPercent =
+        totalFactAmount > 0 && factItem
+          ? (factItem.amount / totalFactAmount) * 100
+          : 0;
+
+      const deltaPercent = factPercent - planItem.planPercent;
+
+      return {
+        category: planItem.category,
+        planPercent: planItem.planPercent,
+        factPercent,
+        deltaPercent,
+      };
+    });
+  }, [planItems, factItems, totalFactAmount]);
+
+  const underweightRows = useMemo(() => {
+    return [...compareRows]
+      .filter((row) => row.deltaPercent < 0)
+      .sort((a, b) => a.deltaPercent - b.deltaPercent)
+      .slice(0, 2);
+  }, [compareRows]);
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="app-page-title">Сравнение</h1>
+        <p className="app-page-subtitle">
+          Сопоставление целевой структуры портфеля с фактическим распределением
+        </p>
+      </div>
+
+      {errorText && <div className="app-error-box">{errorText}</div>}
+
+      <section className="app-card">
+        <h2 className="app-card-title mb-5">План vs Факт</h2>
+
+        <div className="space-y-3">
+          <div className="grid grid-cols-[1.6fr_0.7fr_0.7fr_0.8fr] gap-4 px-4">
+            <div className="app-micro">Категория</div>
+            <div className="app-micro">План %</div>
+            <div className="app-micro">Факт %</div>
+            <div className="app-micro">Отклонение</div>
+          </div>
+
+          {compareRows.map((row) => {
+            const isOver = row.deltaPercent > 0.01;
+            const isUnder = row.deltaPercent < -0.01;
+
+            const deltaClass = isOver
+              ? "text-amber-500"
+              : isUnder
+                ? "text-sky-500"
+                : "text-[var(--text-primary)]";
+
+            const deltaPrefix = row.deltaPercent > 0 ? "+" : "";
+
+            return (
+              <div
+                key={row.category}
+                className="app-list-row grid grid-cols-[1.6fr_0.7fr_0.7fr_0.8fr] gap-4"
+              >
+                <div className="text-[14px] text-[var(--text-primary)]">
+                  {row.category}
+                </div>
+                <div className="app-label">
+                  {formatPercent(row.planPercent)} %
+                </div>
+                <div className="app-label">
+                  {formatPercent(row.factPercent)} %
+                </div>
+                <div className={`text-[14px] font-medium ${deltaClass}`}>
+                  {deltaPrefix}
+                  {formatPercent(row.deltaPercent)} %
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="app-card">
+        <h2 className="app-card-title mb-5">Куда направить следующий взнос</h2>
+
+        {underweightRows.length === 0 ? (
+          <div className="app-list-row">
+            <div>
+              <div className="text-[14px] font-medium text-[var(--text-primary)]">
+                Сильных недоборов не найдено
+              </div>
+              <div className="app-muted">
+                Фактическая структура сейчас близка к целевой.
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {underweightRows.map((row, index) => (
+              <div key={row.category} className="app-list-row">
+                <div>
+                  <div className="text-[14px] font-medium text-[var(--text-primary)]">
+                    {index === 0 ? "Приоритет" : "Второй приоритет"}:{" "}
+                    {row.category}
+                  </div>
+                  <div className="app-muted">
+                    Недобор относительно плана:{" "}
+                    {formatPercent(Math.abs(row.deltaPercent))} %
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}

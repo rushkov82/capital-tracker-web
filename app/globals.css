@@ -1,26 +1,388 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* =========================
+   THEME TOKENS
+========================= */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  color-scheme: light;
+
+  --bg-main: #f8f8f8;
+  --bg-sidebar: #fcfcfc;
+  --bg-surface: #ffffff;
+  --bg-muted: #f4f4f5;
+  --bg-input: #ffffff;
+  --bg-hover: #f1f1f2;
+
+  --border-default: #e5e7eb;
+  --border-strong: #d4d4d8;
+
+  --text-primary: #171717;
+  --text-secondary: #52525b;
+  --text-muted: #71717a;
+
+  --accent: #3ecf8e;
+  --accent-hover: #33b97e;
+  --accent-foreground: #062b1f;
+
+  --danger: #d95c5c;
+  --danger-bg: rgba(217, 92, 92, 0.1);
+  --danger-border: rgba(217, 92, 92, 0.22);
+
+  --radius-card: 12px;
+  --radius-input: 8px;
+  --radius-button: 8px;
+  --radius-pill: 999px;
+
+  --shadow-card: none;
+
+  --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    color-scheme: dark;
+
+    --bg-main: #181818;
+    --bg-sidebar: #181818;
+    --bg-surface: #1f1f1f;
+    --bg-muted: #1b1b1b;
+    --bg-input: #1f1f1f;
+    --bg-hover: #242424;
+
+    --border-default: #2a2a2a;
+    --border-strong: #343434;
+
+    --text-primary: #eeeeee;
+    --text-secondary: #a3a3a3;
+    --text-muted: #737373;
+
+    --accent: #3ecf8e;
+    --accent-hover: #53d899;
+    --accent-foreground: #0f1720;
+
+    --danger: #e05d5d;
+    --danger-bg: rgba(224, 93, 93, 0.1);
+    --danger-border: rgba(224, 93, 93, 0.22);
+
+    --shadow-card: none;
   }
 }
 
+/* =========================
+   BASE
+========================= */
+
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+/* =========================
+   TYPOGRAPHY
+========================= */
+
+.app-page-title {
+  font-size: 32px;
+  line-height: 38px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.app-page-subtitle {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+
+.app-card-title {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.app-label {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+
+.app-muted {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-muted);
+}
+
+.app-micro {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  background: var(--bg-main);
+}
+
+.app-sidebar {
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-default);
+}
+
+.app-topbar {
+  border-bottom: 1px solid var(--border-default);
+  background: var(--bg-main);
+  padding: 16px 32px;
+}
+
+.app-content {
+  min-width: 0;
+  padding: 32px;
+}
+
+/* =========================
+   CARD / SURFACE
+========================= */
+
+.app-card {
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.app-subsurface {
+  border: 1px solid var(--border-default);
+  background: var(--bg-muted);
+  border-radius: var(--radius-card);
+}
+
+/* =========================
+   FORM
+========================= */
+
+.app-input,
+.app-select {
+  width: 100%;
+  height: 44px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-radius: var(--radius-input);
+  padding: 0 12px;
+  font-size: 14px;
+  line-height: 20px;
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.app-input::placeholder {
+  color: var(--text-muted);
+}
+
+.app-input:focus,
+.app-select:focus {
+  border-color: var(--border-strong);
+}
+
+.app-input-readonly {
+  color: var(--text-muted);
+}
+
+.app-form-grid {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-form-grid-wide {
+  display: grid;
+  grid-template-columns: 150px 1fr 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.app-button-primary {
+  height: 44px;
+  border-radius: var(--radius-button);
+  background: var(--accent);
+  color: var(--accent-foreground);
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+
+.app-button-primary:hover {
+  background: var(--accent-hover);
+}
+
+.app-button-secondary {
+  height: 44px;
+  border-radius: var(--radius-button);
+  border: 1px solid var(--border-default);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.app-button-secondary:hover {
+  background: var(--bg-muted);
+  border-color: var(--border-strong);
+}
+
+.app-button-danger {
+  height: 44px;
+  border-radius: var(--radius-button);
+  background: var(--danger);
+  color: white;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: filter 0.15s ease;
+}
+
+.app-button-danger:hover {
+  filter: brightness(1.06);
+}
+
+.app-button-info {
+  height: 44px;
+  border-radius: var(--radius-button);
+  background: #2f6fed;
+  color: white;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: filter 0.15s ease;
+}
+
+.app-button-info:hover {
+  filter: brightness(1.06);
+}
+
+/* =========================
+   NAVIGATION
+========================= */
+
+.app-nav-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+
+.app-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: var(--radius-button);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.app-nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.app-nav-item-active {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* =========================
+   HELPERS
+========================= */
+
+.app-divider {
+  height: 1px;
+  background: var(--border-default);
+}
+
+.app-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-default);
+  background: var(--bg-hover);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.app-error-box {
+  border: 1px solid var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-radius: var(--radius-input);
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.app-error-text {
+  color: var(--danger);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* =========================
+   TABLE / LIST ROWS
+========================= */
+
+.app-list-row {
+  border: 1px solid var(--border-default);
+  background: var(--bg-muted);
+  border-radius: var(--radius-input);
+  padding: 12px 16px;
+}
+
+/* =========================
+   LINKS RESET
+========================= */
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+input,
+select {
+  font: inherit;
 }
