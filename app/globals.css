@@ -495,3 +495,22 @@ select {
     grid-template-columns: 1fr;
   }
 }
+.app-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+/* планшет */
+@media (min-width: 768px) {
+  .app-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* десктоп */
+@media (min-width: 1024px) {
+  .app-grid {
+    grid-template-columns: 1.05fr 1.15fr;
+  }
+}
