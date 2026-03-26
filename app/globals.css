@@ -386,3 +386,112 @@ input,
 select {
   font: inherit;
 }
+/* Layout */
+
+.app-root {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-sidebar {
+  width: 240px;
+  padding: 20px;
+  border-right: 1px solid var(--border);
+}
+
+.app-content {
+  flex: 1;
+  padding: 24px;
+}
+
+/* Mobile header */
+
+.app-mobile-header {
+  display: none;
+}
+
+.app-burger {
+  font-size: 20px;
+}
+
+.app-mobile-title {
+  font-weight: 600;
+}
+
+/* Mobile menu */
+
+.app-mobile-menu {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 50;
+}
+
+.app-mobile-menu-inner {
+  width: 240px;
+  height: 100%;
+  background: var(--bg-card);
+  padding: 20px;
+}
+
+/* Grid */
+
+.app-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Cards */
+
+.app-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+/* Form rows */
+
+.app-form-row {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Mobile */
+
+@media (max-width: 900px) {
+  .app-sidebar {
+    display: none;
+  }
+
+  .app-mobile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .app-content {
+    padding: 16px;
+  }
+
+  .app-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Очень узкие телефоны */
+
+@media (max-width: 420px) {
+  .app-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .app-form-row {
+    grid-template-columns: 1fr;
+  }
+}
