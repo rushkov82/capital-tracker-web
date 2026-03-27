@@ -20,7 +20,6 @@ export default function AppShell({
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <div className="lg:grid lg:min-h-screen lg:grid-cols-[260px_1fr]">
-        {/* Desktop sidebar */}
         <aside className="hidden border-r border-[var(--border)] bg-[var(--background)] lg:block">
           <div className="flex h-full flex-col px-4 py-5">
             <div className="mb-8 flex items-center gap-3 px-2">
@@ -76,16 +75,13 @@ export default function AppShell({
           </div>
         </aside>
 
-        {/* Right side */}
         <div className="min-w-0">
-          {/* Desktop topbar */}
           <div className="hidden border-b border-[var(--border)] bg-[var(--background)] px-8 py-4 lg:block">
             <div className="text-[14px] text-[var(--text-secondary)]">
               Инструмент стратегического планирования и контроля капитала
             </div>
           </div>
 
-          {/* Mobile topbar */}
           <div className="border-b border-[var(--border)] bg-[var(--background)] px-4 py-4 lg:hidden">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--card)] text-sm font-semibold text-[var(--accent)]">
@@ -125,7 +121,6 @@ export default function AppShell({
             </div>
           </div>
 
-          {/* Page content */}
           <main className="min-w-0 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
             {children}
           </main>
