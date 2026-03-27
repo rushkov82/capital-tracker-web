@@ -33,7 +33,6 @@ export default function CapitalPage() {
       const data = await fetchOperations();
       setOperations(data);
     } catch (error) {
-      console.log("Ошибка загрузки:", error);
       setErrorText(
         error instanceof Error ? error.message : "Ошибка загрузки операций"
       );
@@ -65,7 +64,6 @@ export default function CapitalPage() {
 
       await loadOperations();
     } catch (error) {
-      console.log("Ошибка записи:", error);
       setErrorText(
         error instanceof Error ? error.message : "Ошибка сохранения"
       );
@@ -80,16 +78,15 @@ export default function CapitalPage() {
     return getTotalFactAmount(groupedFact);
   }, [groupedFact]);
 
-  // 👇 показываем только последние 5 операций
+  // 👇 только последние 3 операции
   const recentOperations = useMemo(() => {
     return [...operations]
       .sort((a, b) => b.operation_date.localeCompare(a.operation_date))
-      .slice(0, 5);
+      .slice(0, 3);
   }, [operations]);
 
   return (
     <div className="space-y-6">
-      {/* HEADER */}
       <div>
         <h1 className="app-page-title">Капитал</h1>
         <p className="app-page-subtitle">
@@ -99,7 +96,6 @@ export default function CapitalPage() {
 
       {errorText && <div className="app-error-box">{errorText}</div>}
 
-      {/* FORM */}
       <ContributionForm
         cardClass="app-card"
         commonInputClass="app-input"
@@ -116,7 +112,6 @@ export default function CapitalPage() {
         onSave={saveContribution}
       />
 
-      {/* DISTRIBUTION */}
       <FactDistribution
         cardClass="app-card"
         items={groupedFact}
@@ -125,7 +120,6 @@ export default function CapitalPage() {
         formatPercent={formatPercent}
       />
 
-      {/* OPERATIONS */}
       <OperationsList
         cardClass="app-card"
         operations={recentOperations}
