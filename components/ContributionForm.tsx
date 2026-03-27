@@ -78,7 +78,7 @@ export default function ContributionForm({
         <div className="flex justify-end pt-2">
           <button
             onClick={onSave}
-            className="px-4 h-[36px] text-[14px] rounded-[10px] border border-[var(--border)]"
+            className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-sm font-medium hover:bg-[var(--border)] transition"
           >
             Сохранить
           </button>
