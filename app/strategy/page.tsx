@@ -198,7 +198,7 @@ export default function StrategyPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2">
+      <div className="grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-[1.05fr_1.15fr]">
         <MainParameters
           cardClass="app-card"
           commonInputClass="app-input"
@@ -214,43 +214,41 @@ export default function StrategyPage() {
           setYears={setYears}
         />
 
-        <div className="space-y-4">
-          <div className="flex">
-            <button onClick={calculate} className="app-button">
-              Рассчитать
-            </button>
-          </div>
+        <PortfolioStructure
+          cardClass="app-card"
+          commonInputClass="app-input"
+          stocksBondsShare={stocksBondsShare}
+          setStocksBondsShare={setStocksBondsShare}
+          stocksBondsReturn={stocksBondsReturn}
+          setStocksBondsReturn={setStocksBondsReturn}
+          rubCashShare={rubCashShare}
+          setRubCashShare={setRubCashShare}
+          rubCashReturn={rubCashReturn}
+          setRubCashReturn={setRubCashReturn}
+          metalsShare={metalsShare}
+          setMetalsShare={setMetalsShare}
+          metalsReturn={metalsReturn}
+          setMetalsReturn={setMetalsReturn}
+          realEstateShare={realEstateShare}
+          setRealEstateShare={setRealEstateShare}
+          realEstateReturn={realEstateReturn}
+          setRealEstateReturn={setRealEstateReturn}
+          currencyShare={currencyShare}
+          setCurrencyShare={setCurrencyShare}
+          currencyReturn={currencyReturn}
+          setCurrencyReturn={setCurrencyReturn}
+          otherShare={otherShare}
+          otherReturn={otherReturn}
+          setOtherReturn={setOtherReturn}
+          totalShare={totalManualShare + Math.max(otherShare, 0)}
+          portfolioResult={portfolioResult}
+        />
+      </div>
 
-          <PortfolioStructure
-            cardClass="app-card"
-            commonInputClass="app-input"
-            stocksBondsShare={stocksBondsShare}
-            setStocksBondsShare={setStocksBondsShare}
-            stocksBondsReturn={stocksBondsReturn}
-            setStocksBondsReturn={setStocksBondsReturn}
-            rubCashShare={rubCashShare}
-            setRubCashShare={setRubCashShare}
-            rubCashReturn={rubCashReturn}
-            setRubCashReturn={setRubCashReturn}
-            metalsShare={metalsShare}
-            setMetalsShare={setMetalsShare}
-            metalsReturn={metalsReturn}
-            setMetalsReturn={setMetalsReturn}
-            realEstateShare={realEstateShare}
-            setRealEstateShare={setRealEstateShare}
-            realEstateReturn={realEstateReturn}
-            setRealEstateReturn={setRealEstateReturn}
-            currencyShare={currencyShare}
-            setCurrencyShare={setCurrencyShare}
-            currencyReturn={currencyReturn}
-            setCurrencyReturn={setCurrencyReturn}
-            otherShare={otherShare}
-            otherReturn={otherReturn}
-            setOtherReturn={setOtherReturn}
-            totalShare={totalManualShare + Math.max(otherShare, 0)}
-            portfolioResult={portfolioResult}
-          />
-        </div>
+      <div className="flex">
+        <button onClick={calculate} className="app-button">
+          Рассчитать
+        </button>
       </div>
 
       <ResultBlock
