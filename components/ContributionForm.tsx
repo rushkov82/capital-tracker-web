@@ -36,7 +36,7 @@ export default function ContributionForm({
       <div className="space-y-3">
         <FormRow label="Сумма пополнения">
           <input
-            className={`${commonInputClass} text-[14px] h-[36px]`}
+            className={commonInputClass}
             value={actualContribution}
             onChange={(e) => setActualContribution(e.target.value)}
             placeholder="₽"
@@ -45,14 +45,12 @@ export default function ContributionForm({
 
         <FormRow label="Категория">
           <select
-            className={`${selectClass} text-[14px] h-[36px]`}
+            className={selectClass}
             value={contributionCategory}
             onChange={(e) => setContributionCategory(e.target.value)}
           >
             {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
+              <option key={category}>{category}</option>
             ))}
           </select>
         </FormRow>
@@ -60,7 +58,7 @@ export default function ContributionForm({
         <FormRow label="Дата">
           <input
             type="date"
-            className={`${commonInputClass} text-[14px] h-[36px]`}
+            className={commonInputClass}
             value={contributionDate}
             onChange={(e) => setContributionDate(e.target.value)}
           />
@@ -68,18 +66,14 @@ export default function ContributionForm({
 
         <FormRow label="Комментарий">
           <input
-            className={`${commonInputClass} text-[14px] h-[36px]`}
+            className={commonInputClass}
             value={contributionComment}
             onChange={(e) => setContributionComment(e.target.value)}
-            placeholder="например: докупил на просадке"
           />
         </FormRow>
 
         <div className="flex justify-end pt-2">
-          <button
-            onClick={onSave}
-            className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-sm font-medium hover:bg-[var(--border)] transition"
-          >
+          <button onClick={onSave} className="app-button">
             Сохранить
           </button>
         </div>
