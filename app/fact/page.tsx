@@ -96,6 +96,7 @@ export default function CapitalPage() {
 
       {errorText && <div className="app-error-box">{errorText}</div>}
 
+      {/* Форма */}
       <ContributionForm
         cardClass="app-card"
         commonInputClass="app-input"
@@ -112,6 +113,7 @@ export default function CapitalPage() {
         onSave={saveContribution}
       />
 
+      {/* Структура */}
       <FactDistribution
         cardClass="app-card"
         items={groupedFact}
@@ -127,9 +129,9 @@ export default function CapitalPage() {
 
           <Link
             href="/history"
-            className="text-[13px] text-[var(--text-secondary)]"
+            className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--border)] transition"
           >
-            Показать все →
+            Все операции →
           </Link>
         </div>
 
