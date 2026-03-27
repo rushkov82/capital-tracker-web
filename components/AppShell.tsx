@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/plan", label: "Стратегия" },
-  { href: "/fact", label: "Капитал" },
+  { href: "/strategy", label: "Стратегия" },
+  { href: "/capital", label: "Капитал" },
 ];
 
 export default function AppShell({
