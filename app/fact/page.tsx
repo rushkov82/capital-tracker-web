@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { ASSET_CATEGORIES } from "@/lib/constants";
 import { buildFactDistribution, getTotalFactAmount } from "@/lib/portfolio";
 import {
@@ -12,7 +13,6 @@ import ContributionForm from "@/components/ContributionForm";
 import FactDistribution from "@/components/FactDistribution";
 import OperationsList from "@/components/OperationsList";
 import { formatNumber, formatPercent } from "@/lib/calculations";
-import Link from "next/link";
 
 export default function CapitalPage() {
   const [operations, setOperations] = useState<Operation[]>([]);
@@ -96,7 +96,6 @@ export default function CapitalPage() {
 
       {errorText && <div className="app-error-box">{errorText}</div>}
 
-      {/* Форма */}
       <ContributionForm
         cardClass="app-card"
         commonInputClass="app-input"
@@ -113,7 +112,6 @@ export default function CapitalPage() {
         onSave={saveContribution}
       />
 
-      {/* Структура */}
       <FactDistribution
         cardClass="app-card"
         items={groupedFact}
@@ -122,7 +120,6 @@ export default function CapitalPage() {
         formatPercent={formatPercent}
       />
 
-      {/* История */}
       <section className="app-card">
         <h2 className="app-card-title mb-3">История взносов</h2>
 
@@ -148,14 +145,15 @@ export default function CapitalPage() {
           deleteOperation={() => {}}
         />
 
-        {/* КНОПКА ВНИЗУ */}
-        <div className="flex justify-end pt-3">
-          <Link
-            href="/history"
-            className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-sm font-medium hover:bg-[var(--border)] transition"
-          >
-            Все операции →
-          </Link>
+        <div className="border-t border-[var(--border)] mt-3 pt-3">
+          <div className="flex justify-end">
+            <Link
+              href="/history"
+              className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-sm font-medium hover:bg-[var(--border)] transition"
+            >
+              Все операции →
+            </Link>
+          </div>
         </div>
       </section>
     </div>
