@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  fetchOperations,
-  removeOperation,
-  updateOperation,
-  type Operation,
-} from "@/lib/operations";
-import { ASSET_CATEGORIES } from "@/lib/constants";
+import { fetchOperations, type Operation } from "@/lib/operations";
 import { formatNumber } from "@/lib/calculations";
 import OperationsList from "@/components/OperationsList";
 
@@ -22,10 +16,16 @@ export default function HistoryPage() {
   async function loadOperations() {
     try {
       const data = await fetchOperations();
-      setOperations(data);
+      const sorted = [...data].sort((a, b) => {
+        const dateCompare = b.operation_date.localeCompare(a.operation_date);
+        if (dateCompare !== 0) return dateCompare;
+        return b.created_at.localeCompare(a.created_at);
+      });
+
+      setOperations(sorted);
     } catch (error) {
       setErrorText(
-        error instanceof Error ? error.message : "Ошибка загрузки"
+        error instanceof Error ? error.message : "Ошибка загрузки операций"
       );
     }
   }
@@ -33,35 +33,19 @@ export default function HistoryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="app-page-title">История операций</h1>
-        <p className="app-page-subtitle">
-          Все записи по капиталу
-        </p>
+        <h1 className="app-page-title">Все операции</h1>
+        <p className="app-page-subtitle">Полная история взносов</p>
       </div>
 
       {errorText && <div className="app-error-box">{errorText}</div>}
 
-      <OperationsList
-        cardClass="app-card"
-        operations={operations}
-        editingId={null}
-        editingAmount=""
-        setEditingAmount={() => {}}
-        editingComment=""
-        setEditingComment={() => {}}
-        editingDate=""
-        setEditingDate={() => {}}
-        editingCategory={ASSET_CATEGORIES[0]}
-        setEditingCategory={() => {}}
-        categories={[...ASSET_CATEGORIES]}
-        commonInputClass="app-input"
-        selectClass="app-select"
-        formatNumber={formatNumber}
-        startEditing={() => {}}
-        cancelEditing={() => {}}
-        saveEditedOperation={() => {}}
-        deleteOperation={() => {}}
-      />
+      <section className="app-card">
+        <OperationsList
+          cardClass=""
+          operations={operations}
+          formatNumber={formatNumber}
+        />
+      </section>
     </div>
   );
 }

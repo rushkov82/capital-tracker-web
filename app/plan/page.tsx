@@ -190,15 +190,14 @@ export default function PlanPage() {
   }
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 lg:px-8">
+    <div className="space-y-4">
       <div>
-        <h1 className="app-page-title">План</h1>
+        <h1 className="app-page-title">Стратегия</h1>
         <p className="app-page-subtitle">
-          Стратегия капитала, целевая структура и расчёт результата
+          Сценарий роста капитала, структура и ориентир по результату
         </p>
       </div>
 
-      {/* 🔥 ВОТ ГЛАВНЫЙ ФИКС */}
       <div className="grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-[1.05fr_1.15fr]">
         <MainParameters
           cardClass="app-card"
@@ -247,7 +246,7 @@ export default function PlanPage() {
       </div>
 
       <div className="flex">
-        <button onClick={calculate} className="app-button-primary">
+        <button onClick={calculate} className="app-button">
           Рассчитать
         </button>
       </div>

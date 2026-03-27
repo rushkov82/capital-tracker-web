@@ -101,7 +101,7 @@ export default function CapitalPage() {
 
         <div className="app-card">
           <div className="app-text-small mb-1">Текущий капитал</div>
-          <div className="text-[28px] leading-[32px] font-semibold text-[var(--text-primary)]">
+          <div className="text-[28px] leading-[32px] font-semibold text-[var(--accent)]">
             {formatNumber(totalFactAmount)} ₽
           </div>
         </div>
@@ -131,31 +131,12 @@ export default function CapitalPage() {
         <OperationsList
           cardClass=""
           operations={recentOperations}
-          editingId={null}
-          editingAmount=""
-          setEditingAmount={() => {}}
-          editingComment=""
-          setEditingComment={() => {}}
-          editingDate=""
-          setEditingDate={() => {}}
-          editingCategory={ASSET_CATEGORIES[0]}
-          setEditingCategory={() => {}}
-          categories={[...ASSET_CATEGORIES]}
-          commonInputClass="app-input"
-          selectClass="app-select"
           formatNumber={formatNumber}
-          startEditing={() => {}}
-          cancelEditing={() => {}}
-          saveEditedOperation={() => {}}
-          deleteOperation={() => {}}
         />
 
         <div className="border-t border-[var(--border)] mt-3 pt-3">
           <div className="flex justify-end">
-            <Link
-              href="/history"
-              className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-sm font-medium hover:bg-[var(--border)] transition"
-            >
+            <Link href="/history" className="app-button">
               Все операции →
             </Link>
           </div>

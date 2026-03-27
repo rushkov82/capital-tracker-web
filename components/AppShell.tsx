@@ -4,10 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/plan", label: "План" },
-  { href: "/fact", label: "Факт" },
-  { href: "/compare", label: "Сравнение" },
-  { href: "/operations", label: "Операции" },
+  { href: "/plan", label: "Стратегия" },
+  { href: "/fact", label: "Капитал" },
 ];
 
 export default function AppShell({
@@ -50,16 +48,6 @@ export default function AppShell({
                 );
               })}
             </nav>
-
-            <div className="mt-8 border-t border-[var(--border)] pt-4">
-              <div className="app-card">
-                <div className="app-card-title mb-2">Философия</div>
-                <div className="app-text-small">
-                  Не калькулятор на два вечера, а инструмент контроля капитала
-                  на годы.
-                </div>
-              </div>
-            </div>
           </div>
         </aside>
 
