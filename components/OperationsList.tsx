@@ -52,118 +52,120 @@ export default function OperationsList({
 }: OperationsListProps) {
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-4">История взносов</h2>
+      <h2 className="app-card-title mb-3">История взносов</h2>
 
-      <div className="space-y-3">
-        {operations.length === 0 && (
-          <div className="app-text-small">Пока нет записей</div>
-        )}
+      <div className="border-t border-[var(--border)] pt-3">
+        <div className="space-y-2">
+          {operations.length === 0 && (
+            <div className="app-text-small">Пока нет записей</div>
+          )}
 
-        {operations.map((op, index) => {
-          const isEditing = editingId === op.id;
-          const isLast = index === operations.length - 1;
+          {operations.map((op, index) => {
+            const isEditing = editingId === op.id;
+            const isLast = index === operations.length - 1;
 
-          return (
-            <div
-              key={op.id}
-              className={isLast ? "pb-0" : "border-b border-[var(--border)] pb-3"}
-            >
-              {isEditing ? (
-                <div className="space-y-2">
-                  <FormRow label="Сумма">
-                    <input
-                      className={commonInputClass}
-                      value={editingAmount}
-                      onChange={(e) => setEditingAmount(e.target.value)}
-                    />
-                  </FormRow>
+            return (
+              <div
+                key={op.id}
+                className={isLast ? "pb-0" : "border-b border-[var(--border)] pb-2"}
+              >
+                {isEditing ? (
+                  <div className="space-y-2">
+                    <FormRow label="Сумма">
+                      <input
+                        className={commonInputClass}
+                        value={editingAmount}
+                        onChange={(e) => setEditingAmount(e.target.value)}
+                      />
+                    </FormRow>
 
-                  <FormRow label="Категория">
-                    <select
-                      className={selectClass}
-                      value={editingCategory}
-                      onChange={(e) => setEditingCategory(e.target.value)}
-                    >
-                      {categories.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                  </FormRow>
+                    <FormRow label="Категория">
+                      <select
+                        className={selectClass}
+                        value={editingCategory}
+                        onChange={(e) => setEditingCategory(e.target.value)}
+                      >
+                        {categories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                    </FormRow>
 
-                  <FormRow label="Дата">
-                    <input
-                      type="date"
-                      className={commonInputClass}
-                      value={editingDate}
-                      onChange={(e) => setEditingDate(e.target.value)}
-                    />
-                  </FormRow>
+                    <FormRow label="Дата">
+                      <input
+                        type="date"
+                        className={commonInputClass}
+                        value={editingDate}
+                        onChange={(e) => setEditingDate(e.target.value)}
+                      />
+                    </FormRow>
 
-                  <FormRow label="Комментарий">
-                    <input
-                      className={commonInputClass}
-                      value={editingComment}
-                      onChange={(e) => setEditingComment(e.target.value)}
-                    />
-                  </FormRow>
+                    <FormRow label="Комментарий">
+                      <input
+                        className={commonInputClass}
+                        value={editingComment}
+                        onChange={(e) => setEditingComment(e.target.value)}
+                      />
+                    </FormRow>
 
-                  <div className="mt-2 flex justify-end gap-3">
-                    <button
-                      onClick={cancelEditing}
-                      className="text-[13px] leading-[18px] text-[var(--text-secondary)]"
-                    >
-                      Отмена
-                    </button>
-                    <button
-                      onClick={saveEditedOperation}
-                      className="text-[13px] leading-[18px] text-[#2563eb]"
-                    >
-                      Сохранить
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="app-label">
-                      {new Date(op.operation_date).toLocaleDateString("ru-RU")}
-                    </div>
-
-                    <div className="app-text whitespace-nowrap text-emerald-500">
-                      {formatNumber(op.amount)} ₽
+                    <div className="mt-1 flex justify-end gap-3">
+                      <button
+                        onClick={cancelEditing}
+                        className="text-[13px] leading-[18px] text-[var(--text-secondary)]"
+                      >
+                        Отмена
+                      </button>
+                      <button
+                        onClick={saveEditedOperation}
+                        className="text-[13px] leading-[18px] text-[#2563eb]"
+                      >
+                        Сохранить
+                      </button>
                     </div>
                   </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="app-label">
+                        {new Date(op.operation_date).toLocaleDateString("ru-RU")}
+                      </div>
 
-                  <div className="app-text mt-1">
-                    {op.asset_category || "Без категории"}
+                      <div className="app-text whitespace-nowrap text-emerald-500">
+                        {formatNumber(op.amount)} ₽
+                      </div>
+                    </div>
+
+                    <div className="app-text mt-1">
+                      {op.asset_category || "Без категории"}
+                    </div>
+
+                    <div className="app-text-small mt-0.5">
+                      {op.comment?.trim() ? op.comment : "Без комментария"}
+                    </div>
+
+                    <div className="mt-1.5 flex justify-end gap-3">
+                      <button
+                        onClick={() => startEditing(op)}
+                        className="text-[13px] leading-[18px] text-[var(--text-secondary)]"
+                      >
+                        Исправить
+                      </button>
+
+                      <button
+                        onClick={() => deleteOperation(op.id)}
+                        className="text-[13px] leading-[18px] text-[#dc2626]"
+                      >
+                        Удалить
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="app-text-small mt-1">
-                    {op.comment?.trim() ? op.comment : "Без комментария"}
-                  </div>
-
-                  <div className="mt-2 flex justify-end gap-3">
-                    <button
-                      onClick={() => startEditing(op)}
-                      className="text-[13px] leading-[18px] text-[var(--text-secondary)]"
-                    >
-                      Исправить
-                    </button>
-
-                    <button
-                      onClick={() => deleteOperation(op.id)}
-                      className="text-[13px] leading-[18px] text-[#dc2626]"
-                    >
-                      Удалить
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
