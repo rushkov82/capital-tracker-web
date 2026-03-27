@@ -81,22 +81,34 @@ export default function CapitalPage() {
 
   const recentOperations = useMemo(() => {
     return [...operations]
-      .sort((a, b) => b.operation_date.localeCompare(a.operation_date))
+      .sort((a, b) => {
+        const dateCompare = b.operation_date.localeCompare(a.operation_date);
+        if (dateCompare !== 0) return dateCompare;
+        return b.created_at.localeCompare(a.created_at);
+      })
       .slice(0, 3);
   }, [operations]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="app-page-title">Капитал</h1>
-        <p className="app-page-subtitle">
-          Реальные деньги, структура и контроль
-        </p>
+      <div className="space-y-3">
+        <div>
+          <h1 className="app-page-title">Капитал</h1>
+          <p className="app-page-subtitle">
+            Реальные деньги, структура и контроль
+          </p>
+        </div>
+
+        <div className="app-card">
+          <div className="app-text-small mb-1">Текущий капитал</div>
+          <div className="text-[28px] leading-[32px] font-semibold text-[var(--text-primary)]">
+            {formatNumber(totalFactAmount)} ₽
+          </div>
+        </div>
       </div>
 
       {errorText && <div className="app-error-box">{errorText}</div>}
 
-      {/* 1. СДЕЛАТЬ ВЗНОС */}
       <ContributionForm
         cardClass="app-card"
         commonInputClass="app-input"
@@ -113,7 +125,6 @@ export default function CapitalPage() {
         onSave={saveContribution}
       />
 
-      {/* 2. ИСТОРИЯ */}
       <section className="app-card">
         <h2 className="app-card-title mb-3">История взносов</h2>
 
@@ -151,7 +162,6 @@ export default function CapitalPage() {
         </div>
       </section>
 
-      {/* 3. СТРУКТУРА */}
       <FactDistribution
         cardClass="app-card"
         items={groupedFact}

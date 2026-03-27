@@ -31,9 +31,9 @@ export default function ContributionForm({
 }: ContributionFormProps) {
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-5">Сделать взнос</h2>
+      <h2 className="app-card-title mb-4">Сделать взнос</h2>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <FormRow label="Сумма пополнения">
           <input
             className={commonInputClass}
@@ -75,7 +75,7 @@ export default function ContributionForm({
           />
         </FormRow>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-1">
           <button
             onClick={onSave}
             className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-sm font-medium hover:bg-[var(--border)] transition"
@@ -96,7 +96,7 @@ function FormRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="app-form-grid">
+    <div className="space-y-1.5">
       <label className="app-label">{label}</label>
       {children}
     </div>

@@ -22,34 +22,35 @@ export default function FactDistribution({
 
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-4">Структура капитала</h2>
+      <h2 className="app-card-title mb-3">Структура капитала</h2>
 
-      <div className="space-y-2">
-        {filteredItems.map((item) => {
-          const percent =
-            totalAmount > 0 ? (item.amount / totalAmount) * 100 : 0;
+      <div className="border-t border-[var(--border)] pt-3">
+        <div className="space-y-3">
+          {filteredItems.map((item, index) => {
+            const percent =
+              totalAmount > 0 ? (item.amount / totalAmount) * 100 : 0;
+            const isLast = index === filteredItems.length - 1;
 
-          return (
-            <div key={item.category} className="app-list-row">
-              <div className="flex flex-col">
-                <span className="app-text">{item.category}</span>
-                <span className="app-micro">
+            return (
+              <div
+                key={item.category}
+                className={isLast ? "pb-0" : "border-b border-[var(--border)] pb-3"}
+              >
+                <div className="app-text">{item.category}</div>
+                <div className="app-text-small mt-0.5">
                   {formatPercent(percent)} %
-                </span>
+                </div>
+                <div className="app-text mt-1">
+                  {formatNumber(item.amount)} ₽
+                </div>
               </div>
+            );
+          })}
 
-              <span className="app-text">
-                {formatNumber(item.amount)} ₽
-              </span>
-            </div>
-          );
-        })}
-
-        <div className="flex items-center justify-between border-t border-[var(--border)] pt-3 mt-2 font-semibold">
-          <span className="app-text">Итого</span>
-          <span className="app-text">
-            {formatNumber(totalAmount)} ₽
-          </span>
+          <div className="border-t border-[var(--border)] pt-3 flex items-center justify-between">
+            <span className="app-text">Итого</span>
+            <span className="app-text">{formatNumber(totalAmount)} ₽</span>
+          </div>
         </div>
       </div>
     </section>
