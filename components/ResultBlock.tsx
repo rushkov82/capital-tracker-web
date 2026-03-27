@@ -45,7 +45,7 @@ function ResultRow({
   return (
     <div className="app-list-row">
       <span className="app-label">{label}</span>
-      <span className={`text-[14px] font-semibold ${valueClassName || ""}`}>
+      <span className={`app-text ${valueClassName || ""}`}>
         {value}
       </span>
     </div>

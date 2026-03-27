@@ -59,24 +59,21 @@ export default function ComparePage() {
       const data = await fetchOperations();
       setOperations(data);
     } catch (error) {
-      console.log("Ошибка загрузки:", error);
       setErrorText(
         error instanceof Error ? error.message : "Ошибка загрузки операций"
       );
     }
   }
 
-  const factItems = useMemo(() => {
-    return buildFactDistribution(operations);
-  }, [operations]);
-
-  const totalFactAmount = useMemo(() => {
-    return getTotalFactAmount(factItems);
-  }, [factItems]);
-
-  const planItems = useMemo(() => {
-    return getPlanAllocation(planSettings);
-  }, [planSettings]);
+  const factItems = useMemo(() => buildFactDistribution(operations), [operations]);
+  const totalFactAmount = useMemo(
+    () => getTotalFactAmount(factItems),
+    [factItems]
+  );
+  const planItems = useMemo(
+    () => getPlanAllocation(planSettings),
+    [planSettings]
+  );
 
   const compareRows = useMemo<CompareRow[]>(() => {
     return planItems.map((planItem) => {
@@ -89,13 +86,11 @@ export default function ComparePage() {
           ? (factItem.amount / totalFactAmount) * 100
           : 0;
 
-      const deltaPercent = factPercent - planItem.planPercent;
-
       return {
         category: planItem.category,
         planPercent: planItem.planPercent,
         factPercent,
-        deltaPercent,
+        deltaPercent: factPercent - planItem.planPercent,
       };
     });
   }, [planItems, factItems, totalFactAmount]);
@@ -123,10 +118,10 @@ export default function ComparePage() {
 
         <div className="space-y-3">
           <div className="grid grid-cols-[1.6fr_0.7fr_0.7fr_0.8fr] gap-4 px-4">
-            <div className="app-micro">Категория</div>
-            <div className="app-micro">План %</div>
-            <div className="app-micro">Факт %</div>
-            <div className="app-micro">Отклонение</div>
+            <div className="app-text-small">Категория</div>
+            <div className="app-text-small">План %</div>
+            <div className="app-text-small">Факт %</div>
+            <div className="app-text-small">Отклонение</div>
           </div>
 
           {compareRows.map((row) => {
@@ -137,7 +132,7 @@ export default function ComparePage() {
               ? "text-amber-500"
               : isUnder
                 ? "text-sky-500"
-                : "text-[var(--text-primary)]";
+                : "";
 
             const deltaPrefix = row.deltaPercent > 0 ? "+" : "";
 
@@ -146,16 +141,14 @@ export default function ComparePage() {
                 key={row.category}
                 className="app-list-row grid grid-cols-[1.6fr_0.7fr_0.7fr_0.8fr] gap-4"
               >
-                <div className="text-[14px] text-[var(--text-primary)]">
-                  {row.category}
-                </div>
+                <div className="app-text">{row.category}</div>
                 <div className="app-label">
                   {formatPercent(row.planPercent)} %
                 </div>
                 <div className="app-label">
                   {formatPercent(row.factPercent)} %
                 </div>
-                <div className={`text-[14px] font-medium ${deltaClass}`}>
+                <div className={`app-text ${deltaClass}`}>
                   {deltaPrefix}
                   {formatPercent(row.deltaPercent)} %
                 </div>
@@ -166,15 +159,15 @@ export default function ComparePage() {
       </section>
 
       <section className="app-card">
-        <h2 className="app-card-title mb-5">Куда направить следующий взнос</h2>
+        <h2 className="app-card-title mb-5">
+          Куда направить следующий взнос
+        </h2>
 
         {underweightRows.length === 0 ? (
           <div className="app-list-row">
             <div>
-              <div className="text-[14px] font-medium text-[var(--text-primary)]">
-                Сильных недоборов не найдено
-              </div>
-              <div className="app-muted">
+              <div className="app-text">Сильных недоборов не найдено</div>
+              <div className="app-text-small">
                 Фактическая структура сейчас близка к целевой.
               </div>
             </div>
@@ -184,13 +177,12 @@ export default function ComparePage() {
             {underweightRows.map((row, index) => (
               <div key={row.category} className="app-list-row">
                 <div>
-                  <div className="text-[14px] font-medium text-[var(--text-primary)]">
+                  <div className="app-text">
                     {index === 0 ? "Приоритет" : "Второй приоритет"}:{" "}
                     {row.category}
                   </div>
-                  <div className="app-muted">
-                    Недобор относительно плана:{" "}
-                    {formatPercent(Math.abs(row.deltaPercent))} %
+                  <div className="app-text-small">
+                    Недобор: {formatPercent(Math.abs(row.deltaPercent))} %
                   </div>
                 </div>
               </div>

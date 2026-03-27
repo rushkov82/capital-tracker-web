@@ -20,7 +20,9 @@ export default function FactDistribution({
 }: FactDistributionProps) {
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-5">Распределение фактических взносов</h2>
+      <h2 className="app-card-title mb-5">
+        Распределение фактических взносов
+      </h2>
 
       <div className="space-y-3">
         {items.map((item) => {
@@ -30,21 +32,26 @@ export default function FactDistribution({
           return (
             <div key={item.category} className="app-list-row">
               <div className="flex flex-col">
-                <span className="text-[14px] text-[var(--text-primary)]">
+                <span className="app-text">
                   {item.category}
                 </span>
-                <span className="app-micro">{formatPercent(percent)} %</span>
+                <span className="app-micro">
+                  {formatPercent(percent)} %
+                </span>
               </div>
-              <span className="text-[14px] font-medium text-[var(--text-primary)]">
+
+              <span className="app-text">
                 {formatNumber(item.amount)} ₽
               </span>
             </div>
           );
         })}
 
-        <div className="flex items-center justify-between border-t border-[var(--border-default)] pt-3 font-semibold text-[var(--text-primary)]">
-          <span>Итого</span>
-          <span>{formatNumber(totalAmount)} ₽</span>
+        <div className="flex items-center justify-between border-t border-[var(--border)] pt-3">
+          <span className="app-label">Итого</span>
+          <span className="app-text">
+            {formatNumber(totalAmount)} ₽
+          </span>
         </div>
       </div>
     </section>

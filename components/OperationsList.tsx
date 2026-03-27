@@ -57,7 +57,7 @@ export default function OperationsList({
       <div className="space-y-4">
         {operations.length === 0 && (
           <div className="app-list-row">
-            <span className="app-muted">Пока нет записей</span>
+            <span className="app-text-small">Пока нет записей</span>
           </div>
         )}
 
@@ -122,15 +122,17 @@ export default function OperationsList({
                     <span className="app-label">
                       {new Date(op.operation_date).toLocaleDateString("ru-RU")}
                     </span>
+
                     <span className="app-badge">
                       {op.asset_category || "Без категории"}
                     </span>
-                    <span className="text-[14px] font-semibold text-emerald-500">
+
+                    <span className="app-text text-emerald-500">
                       {formatNumber(op.amount)} ₽
                     </span>
                   </div>
 
-                  <div className="app-muted">
+                  <div className="app-text-small">
                     {op.comment?.trim() ? op.comment : "Без комментария"}
                   </div>
 
