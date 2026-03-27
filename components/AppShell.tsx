@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
+  { href: "/", label: "Обзор" },
   { href: "/strategy", label: "Стратегия" },
   { href: "/capital", label: "Капитал" },
 ];
@@ -14,6 +15,11 @@ export default function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+
+  function isActive(href: string) {
+    if (href === "/") return pathname === "/";
+    return pathname === href;
+  }
 
   return (
     <div className="app-shell-root">
@@ -32,21 +38,17 @@ export default function AppShell({
             <div className="mb-3 app-nav-title">Навигация</div>
 
             <nav className="space-y-1">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`app-nav-item ${
-                      isActive ? "app-nav-item-active" : ""
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`app-nav-item ${
+                    isActive(item.href) ? "app-nav-item-active" : ""
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </nav>
           </div>
         </aside>
@@ -70,21 +72,17 @@ export default function AppShell({
 
             <div className="mt-3 overflow-x-auto">
               <nav className="flex min-w-max gap-2 pb-1">
-                {navItems.map((item) => {
-                  const isActive = pathname === item.href;
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`app-nav-item whitespace-nowrap ${
-                        isActive ? "app-nav-item-active" : ""
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`app-nav-item whitespace-nowrap ${
+                      isActive(item.href) ? "app-nav-item-active" : ""
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
               </nav>
             </div>
           </div>
