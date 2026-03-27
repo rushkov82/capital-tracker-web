@@ -1,15 +1,20 @@
 import Link from "next/link";
+import AuthStatus from "@/components/AuthStatus";
 
 export default function OverviewPage() {
   return (
     <div className="space-y-6">
       <section className="app-card">
         <div className="space-y-4">
-          <div className="space-y-2">
-            <h1 className="app-page-title">Capital Tracker</h1>
-            <p className="app-page-subtitle">
-              Система планирования и контроля личного капитала
-            </p>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-2">
+              <h1 className="app-page-title">Capital Tracker</h1>
+              <p className="app-page-subtitle">
+                Система планирования и контроля личного капитала
+              </p>
+            </div>
+
+            <AuthStatus />
           </div>
 
           <p className="app-text-secondary max-w-[760px]">
@@ -95,62 +100,6 @@ export default function OverviewPage() {
                 двигаться по системе.
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="app-card">
-          <div className="space-y-3">
-            <h2 className="app-card-title">Кому подойдёт</h2>
-
-            <div className="space-y-2">
-              <p className="app-text-secondary">
-                Тем, кто хочет собирать капитал системно, а не по настроению.
-              </p>
-              <p className="app-text-secondary">
-                Тем, кто хочет видеть не только план, но и фактические действия.
-              </p>
-              <p className="app-text-secondary">
-                Тем, кто хочет превратить накопление денег в управляемый
-                процесс.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="app-card">
-          <div className="space-y-3">
-            <h2 className="app-card-title">Что уже есть в системе</h2>
-
-            <div className="space-y-2">
-              <p className="app-text-secondary">Стратегия роста капитала</p>
-              <p className="app-text-secondary">Учёт фактических взносов</p>
-              <p className="app-text-secondary">Текущая сумма капитала</p>
-              <p className="app-text-secondary">Структура по категориям</p>
-              <p className="app-text-secondary">История операций</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="app-card">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <h2 className="app-card-title">Начать можно с любого режима</h2>
-            <p className="app-text-secondary max-w-[760px]">
-              Если хочешь сначала понять ориентир — переходи в Стратегию. Если
-              уже ведёшь реальные взносы — открывай Капитал.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <Link href="/strategy" className="app-button">
-              Перейти в стратегию
-            </Link>
-            <Link href="/capital" className="app-button">
-              Перейти в капитал
-            </Link>
           </div>
         </div>
       </section>
