@@ -31,12 +31,12 @@ export default function ContributionForm({
 }: ContributionFormProps) {
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-4">Сделать взнос</h2>
+      <h2 className="app-card-title mb-3">Сделать взнос</h2>
 
       <div className="space-y-3">
         <FormRow label="Сумма пополнения">
           <input
-            className={commonInputClass}
+            className={`${commonInputClass} text-[14px] h-[36px]`}
             value={actualContribution}
             onChange={(e) => setActualContribution(e.target.value)}
             placeholder="₽"
@@ -45,7 +45,7 @@ export default function ContributionForm({
 
         <FormRow label="Категория">
           <select
-            className={selectClass}
+            className={`${selectClass} text-[14px] h-[36px]`}
             value={contributionCategory}
             onChange={(e) => setContributionCategory(e.target.value)}
           >
@@ -60,7 +60,7 @@ export default function ContributionForm({
         <FormRow label="Дата">
           <input
             type="date"
-            className={commonInputClass}
+            className={`${commonInputClass} text-[14px] h-[36px]`}
             value={contributionDate}
             onChange={(e) => setContributionDate(e.target.value)}
           />
@@ -68,17 +68,17 @@ export default function ContributionForm({
 
         <FormRow label="Комментарий">
           <input
-            className={commonInputClass}
+            className={`${commonInputClass} text-[14px] h-[36px]`}
             value={contributionComment}
             onChange={(e) => setContributionComment(e.target.value)}
             placeholder="например: докупил на просадке"
           />
         </FormRow>
 
-        <div className="flex justify-end pt-1">
+        <div className="flex justify-end pt-2">
           <button
             onClick={onSave}
-            className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-sm font-medium hover:bg-[var(--border)] transition"
+            className="px-4 h-[36px] text-[14px] rounded-[10px] border border-[var(--border)]"
           >
             Сохранить
           </button>
@@ -96,8 +96,8 @@ function FormRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
-      <label className="app-label">{label}</label>
+    <div className="space-y-1">
+      <label className="app-text-small">{label}</label>
       {children}
     </div>
   );
