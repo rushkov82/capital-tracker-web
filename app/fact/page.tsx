@@ -124,16 +124,7 @@ export default function CapitalPage() {
 
       {/* История */}
       <section className="app-card">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="app-card-title">История взносов</h2>
-
-          <Link
-            href="/history"
-            className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--border)] transition"
-          >
-            Все операции →
-          </Link>
-        </div>
+        <h2 className="app-card-title mb-3">История взносов</h2>
 
         <OperationsList
           cardClass=""
@@ -156,6 +147,16 @@ export default function CapitalPage() {
           saveEditedOperation={() => {}}
           deleteOperation={() => {}}
         />
+
+        {/* КНОПКА ВНИЗУ */}
+        <div className="flex justify-end pt-3">
+          <Link
+            href="/history"
+            className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-sm font-medium hover:bg-[var(--border)] transition"
+          >
+            Все операции →
+          </Link>
+        </div>
       </section>
     </div>
   );

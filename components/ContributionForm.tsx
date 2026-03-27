@@ -31,7 +31,7 @@ export default function ContributionForm({
 }: ContributionFormProps) {
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-5">Фактический взнос</h2>
+      <h2 className="app-card-title mb-5">Сделать взнос</h2>
 
       <div className="space-y-4">
         <FormRow label="Сумма пополнения">
@@ -77,7 +77,7 @@ export default function ContributionForm({
 
         <div className="flex justify-end">
           <button onClick={onSave} className="app-button-primary">
-            Сохранить взнос
+            Сохранить
           </button>
         </div>
       </div>
