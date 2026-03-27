@@ -96,6 +96,7 @@ export default function CapitalPage() {
 
       {errorText && <div className="app-error-box">{errorText}</div>}
 
+      {/* 1. СДЕЛАТЬ ВЗНОС */}
       <ContributionForm
         cardClass="app-card"
         commonInputClass="app-input"
@@ -112,14 +113,7 @@ export default function CapitalPage() {
         onSave={saveContribution}
       />
 
-      <FactDistribution
-        cardClass="app-card"
-        items={groupedFact}
-        totalAmount={totalFactAmount}
-        formatNumber={formatNumber}
-        formatPercent={formatPercent}
-      />
-
+      {/* 2. ИСТОРИЯ */}
       <section className="app-card">
         <h2 className="app-card-title mb-3">История взносов</h2>
 
@@ -156,6 +150,15 @@ export default function CapitalPage() {
           </div>
         </div>
       </section>
+
+      {/* 3. СТРУКТУРА */}
+      <FactDistribution
+        cardClass="app-card"
+        items={groupedFact}
+        totalAmount={totalFactAmount}
+        formatNumber={formatNumber}
+        formatPercent={formatPercent}
+      />
     </div>
   );
 }
