@@ -132,6 +132,7 @@ export default function CapitalPage() {
           cardClass=""
           operations={recentOperations}
           formatNumber={formatNumber}
+          onReload={loadOperations}
         />
 
         <div className="border-t border-[var(--border)] mt-3 pt-3">

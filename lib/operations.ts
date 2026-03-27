@@ -1,5 +1,3 @@
-import { supabase } from "@/lib/supabase";
-
 export type Operation = {
   id: string;
   amount: number;
@@ -9,65 +7,61 @@ export type Operation = {
   created_at: string;
 };
 
-export type SaveOperationInput = {
-  amount: number;
-  comment?: string | null;
-  operation_date: string;
-  asset_category: string;
-};
+const STORAGE_KEY = "capital_operations";
 
-export async function fetchOperations() {
-  const { data, error } = await supabase
-    .from("operations")
-    .select("id, amount, comment, operation_date, asset_category, created_at")
-    .order("operation_date", { ascending: false })
-    .order("created_at", { ascending: false });
+export async function fetchOperations(): Promise<Operation[]> {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return [];
 
-  if (error) {
-    throw new Error(error.message);
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [];
   }
-
-  return (data as Operation[]) || [];
 }
 
-export async function createOperation(input: SaveOperationInput) {
-  const { error } = await supabase.from("operations").insert([
-    {
-      amount: input.amount,
-      comment: input.comment?.trim() || null,
-      operation_date: input.operation_date,
-      asset_category: input.asset_category,
-    },
-  ]);
+export async function createOperation(data: {
+  amount: number;
+  comment: string;
+  operation_date: string;
+  asset_category: string;
+}) {
+  const current = await fetchOperations();
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  const newItem: Operation = {
+    id: crypto.randomUUID(),
+    amount: data.amount,
+    comment: data.comment,
+    operation_date: data.operation_date,
+    asset_category: data.asset_category,
+    created_at: new Date().toISOString(),
+  };
+
+  const updated = [newItem, ...current];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+}
+
+export async function deleteOperation(id: string) {
+  const current = await fetchOperations();
+  const updated = current.filter((item) => item.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 }
 
 export async function updateOperation(
   id: string,
-  input: SaveOperationInput
+  data: { amount: number; comment: string }
 ) {
-  const { error } = await supabase
-    .from("operations")
-    .update({
-      amount: input.amount,
-      comment: input.comment?.trim() || null,
-      operation_date: input.operation_date,
-      asset_category: input.asset_category,
-    })
-    .eq("id", id);
+  const current = await fetchOperations();
 
-  if (error) {
-    throw new Error(error.message);
-  }
-}
+  const updated = current.map((item) => {
+    if (item.id !== id) return item;
 
-export async function removeOperation(id: string) {
-  const { error } = await supabase.from("operations").delete().eq("id", id);
+    return {
+      ...item,
+      amount: data.amount,
+      comment: data.comment,
+    };
+  });
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 }
