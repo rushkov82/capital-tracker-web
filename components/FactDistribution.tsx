@@ -25,7 +25,13 @@ export default function FactDistribution({
       <h2 className="app-card-title mb-3">Структура капитала</h2>
 
       <div className="border-t border-[var(--border)] pt-3">
-        <div className="space-y-3">
+        <div className="grid grid-cols-[1.4fr_0.7fr_1fr] gap-3 pb-2">
+          <div className="app-text-small">Категория</div>
+          <div className="app-text-small text-right">Доля</div>
+          <div className="app-text-small text-right">Сумма</div>
+        </div>
+
+        <div className="space-y-0">
           {filteredItems.map((item, index) => {
             const percent =
               totalAmount > 0 ? (item.amount / totalAmount) * 100 : 0;
@@ -34,22 +40,27 @@ export default function FactDistribution({
             return (
               <div
                 key={item.category}
-                className={isLast ? "pb-0" : "border-b border-[var(--border)] pb-3"}
+                className={`grid grid-cols-[1.4fr_0.7fr_1fr] gap-3 items-center py-2 ${
+                  isLast ? "" : "border-b border-[var(--border)]"
+                }`}
               >
                 <div className="app-text">{item.category}</div>
-                <div className="app-text-small mt-0.5">
+                <div className="app-text text-right">
                   {formatPercent(percent)} %
                 </div>
-                <div className="app-text mt-1">
+                <div className="app-text text-right">
                   {formatNumber(item.amount)} ₽
                 </div>
               </div>
             );
           })}
 
-          <div className="border-t border-[var(--border)] pt-3 flex items-center justify-between">
-            <span className="app-text">Итого</span>
-            <span className="app-text">{formatNumber(totalAmount)} ₽</span>
+          <div className="border-t border-[var(--border)] mt-2 pt-3 grid grid-cols-[1.4fr_0.7fr_1fr] gap-3 items-center">
+            <div className="app-text">Итого</div>
+            <div />
+            <div className="app-text text-right">
+              {formatNumber(totalAmount)} ₽
+            </div>
           </div>
         </div>
       </div>
