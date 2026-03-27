@@ -54,20 +54,19 @@ export default function OperationsList({
     <section className={cardClass}>
       <h2 className="app-card-title mb-4">История взносов</h2>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {operations.length === 0 && (
-          <div className="rounded-[12px] border border-[var(--border)] bg-[var(--card)] px-3 py-3">
-            <span className="app-text-small">Пока нет записей</span>
-          </div>
+          <div className="app-text-small">Пока нет записей</div>
         )}
 
-        {operations.map((op) => {
+        {operations.map((op, index) => {
           const isEditing = editingId === op.id;
+          const isLast = index === operations.length - 1;
 
           return (
             <div
               key={op.id}
-              className="rounded-[12px] border border-[var(--border)] bg-[var(--card)] px-3 py-3"
+              className={isLast ? "pb-0" : "border-b border-[var(--border)] pb-3"}
             >
               {isEditing ? (
                 <div className="space-y-2">
@@ -110,24 +109,24 @@ export default function OperationsList({
                     />
                   </FormRow>
 
-                  <div className="flex justify-end gap-2 pt-1">
+                  <div className="mt-2 flex justify-end gap-3">
                     <button
                       onClick={cancelEditing}
-                      className="rounded-[10px] border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-[14px] leading-[18px] text-[var(--text-primary)]"
+                      className="text-[13px] leading-[18px] text-[var(--text-secondary)]"
                     >
                       Отмена
                     </button>
                     <button
                       onClick={saveEditedOperation}
-                      className="rounded-[10px] bg-[#2563eb] px-3 py-2 text-[14px] leading-[18px] text-white"
+                      className="text-[13px] leading-[18px] text-[#2563eb]"
                     >
                       Сохранить
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center justify-between gap-3">
                     <div className="app-label">
                       {new Date(op.operation_date).toLocaleDateString("ru-RU")}
                     </div>
@@ -137,24 +136,25 @@ export default function OperationsList({
                     </div>
                   </div>
 
-                  <div className="app-text">
+                  <div className="app-text mt-1">
                     {op.asset_category || "Без категории"}
                   </div>
 
-                  <div className="app-text-small">
+                  <div className="app-text-small mt-1">
                     {op.comment?.trim() ? op.comment : "Без комментария"}
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-1">
+                  <div className="mt-2 flex justify-end gap-3">
                     <button
                       onClick={() => startEditing(op)}
-                      className="rounded-[10px] border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-[14px] leading-[18px] text-[var(--text-primary)]"
+                      className="text-[13px] leading-[18px] text-[var(--text-secondary)]"
                     >
                       Исправить
                     </button>
+
                     <button
                       onClick={() => deleteOperation(op.id)}
-                      className="rounded-[10px] bg-[#dc2626] px-3 py-2 text-[14px] leading-[18px] text-white"
+                      className="text-[13px] leading-[18px] text-[#dc2626]"
                     >
                       Удалить
                     </button>
