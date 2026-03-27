@@ -32,47 +32,48 @@ export default function MainParameters({
       <h2 className="app-card-title mb-4">Основные параметры</h2>
 
       <div className="space-y-3">
-        <FormRow label="Начальный капитал">
+        <FormRow label="Начальный капитал" hint="₽">
           <input
             className={commonInputClass}
             value={initialCapital}
             onChange={(e) => setInitialCapital(e.target.value)}
-            placeholder="₽"
+            placeholder="Например: 0"
           />
         </FormRow>
 
-        <FormRow label="Ежемесячный взнос">
+        <FormRow label="Ежемесячный взнос" hint="₽">
           <input
             className={commonInputClass}
             value={monthlyContribution}
             onChange={(e) => setMonthlyContribution(e.target.value)}
-            placeholder="₽"
+            placeholder="Например: 50000"
           />
         </FormRow>
 
-        <FormRow label="Инфляция">
+        <FormRow label="Инфляция" hint="%">
           <input
             className={commonInputClass}
             value={inflation}
             onChange={(e) => setInflation(e.target.value)}
-            placeholder="%"
+            placeholder="Например: 9"
           />
         </FormRow>
 
-        <FormRow label="Индексация взноса">
+        <FormRow label="Индексация взноса" hint="%">
           <input
             className={commonInputClass}
             value={contributionGrowth}
             onChange={(e) => setContributionGrowth(e.target.value)}
-            placeholder="%"
+            placeholder="Например: 10"
           />
         </FormRow>
 
-        <FormRow label="Срок (лет)">
+        <FormRow label="Срок" hint="лет">
           <input
             className={commonInputClass}
             value={years}
             onChange={(e) => setYears(e.target.value)}
+            placeholder="Например: 10"
           />
         </FormRow>
       </div>
@@ -82,14 +83,19 @@ export default function MainParameters({
 
 function FormRow({
   label,
+  hint,
   children,
 }: {
   label: string;
+  hint: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="app-form-grid">
-      <label className="app-label">{label}</label>
+    <div className="space-y-1">
+      <div className="flex items-center justify-between gap-3">
+        <label className="app-label">{label}</label>
+        <span className="app-text-small">{hint}</span>
+      </div>
       {children}
     </div>
   );

@@ -70,10 +70,10 @@ export default function PortfolioStructure({
     <section className={cardClass}>
       <h2 className="app-card-title mb-4">Структура портфеля</h2>
 
-      <div className="mb-3 grid grid-cols-[1fr_110px_110px] gap-3">
+      <div className="mb-3 grid grid-cols-[120px_88px_88px] gap-3 sm:grid-cols-[140px_96px_96px]">
         <div />
-        <div className="app-text-small text-right">Доля %</div>
-        <div className="app-text-small text-right">Доходность %</div>
+        <div className="app-text-small text-right">Доля, %</div>
+        <div className="app-text-small text-right">Доходн., %</div>
       </div>
 
       <div className="space-y-3">
@@ -170,8 +170,8 @@ function PortfolioRow({
   inputClass: string;
 }) {
   return (
-    <div className="grid grid-cols-[1fr_110px_110px] items-center gap-3">
-      <div className="app-label">{name}</div>
+    <div className="grid grid-cols-[120px_88px_88px] items-center gap-3 sm:grid-cols-[140px_96px_96px]">
+      <div className="app-label break-words">{name}</div>
 
       <input
         className={`${inputClass} text-right`}
@@ -204,8 +204,8 @@ function AutoShareRow({
   const displayShare = share < 0 ? 0 : share;
 
   return (
-    <div className="grid grid-cols-[1fr_110px_110px] items-center gap-3">
-      <div className="app-label">{name}</div>
+    <div className="grid grid-cols-[120px_88px_88px] items-center gap-3 sm:grid-cols-[140px_96px_96px]">
+      <div className="app-label break-words">{name}</div>
 
       <input
         className={`${inputClass} app-input-readonly text-right`}
