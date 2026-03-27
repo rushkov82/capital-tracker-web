@@ -21,14 +21,14 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0b0f14;
-    --foreground: #cbd5e1;
+    --foreground: #b8c4d6;
 
     --card: #11161c;
     --border: #1f2937;
 
-    --text-primary: #cbd5e1;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --text-primary: #b8c4d6;
+    --text-secondary: #8ea0b8;
+    --text-muted: #66758a;
 
     --accent: #22c55e;
   }
