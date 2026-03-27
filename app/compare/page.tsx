@@ -66,10 +66,12 @@ export default function ComparePage() {
   }
 
   const factItems = useMemo(() => buildFactDistribution(operations), [operations]);
+
   const totalFactAmount = useMemo(
     () => getTotalFactAmount(factItems),
     [factItems]
   );
+
   const planItems = useMemo(
     () => getPlanAllocation(planSettings),
     [planSettings]
@@ -117,7 +119,7 @@ export default function ComparePage() {
         <h2 className="app-card-title mb-5">План vs Факт</h2>
 
         <div className="space-y-3">
-          <div className="grid grid-cols-[1.6fr_0.7fr_0.7fr_0.8fr] gap-4 px-4">
+          <div className="hidden grid-cols-[1.6fr_0.7fr_0.7fr_0.8fr] gap-4 px-4 md:grid">
             <div className="app-text-small">Категория</div>
             <div className="app-text-small">План %</div>
             <div className="app-text-small">Факт %</div>
@@ -137,20 +139,47 @@ export default function ComparePage() {
             const deltaPrefix = row.deltaPercent > 0 ? "+" : "";
 
             return (
-              <div
-                key={row.category}
-                className="app-list-row grid grid-cols-[1.6fr_0.7fr_0.7fr_0.8fr] gap-4"
-              >
-                <div className="app-text">{row.category}</div>
-                <div className="app-label">
-                  {formatPercent(row.planPercent)} %
+              <div key={row.category}>
+                <div className="hidden rounded-[14px] border border-[var(--border)] bg-[var(--card)] px-4 py-3 md:grid md:grid-cols-[1.6fr_0.7fr_0.7fr_0.8fr] md:gap-4">
+                  <div className="app-text">{row.category}</div>
+                  <div className="app-label">
+                    {formatPercent(row.planPercent)} %
+                  </div>
+                  <div className="app-label">
+                    {formatPercent(row.factPercent)} %
+                  </div>
+                  <div className={`app-text ${deltaClass}`}>
+                    {deltaPrefix}
+                    {formatPercent(row.deltaPercent)} %
+                  </div>
                 </div>
-                <div className="app-label">
-                  {formatPercent(row.factPercent)} %
-                </div>
-                <div className={`app-text ${deltaClass}`}>
-                  {deltaPrefix}
-                  {formatPercent(row.deltaPercent)} %
+
+                <div className="rounded-[14px] border border-[var(--border)] bg-[var(--card)] p-4 md:hidden">
+                  <div className="app-text mb-3">{row.category}</div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <div className="app-text-small mb-1">План</div>
+                      <div className="app-label">
+                        {formatPercent(row.planPercent)} %
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="app-text-small mb-1">Факт</div>
+                      <div className="app-label">
+                        {formatPercent(row.factPercent)} %
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="app-text-small mb-1">Отклонение</div>
+                      <div className={`app-text ${deltaClass}`}>
+                        {deltaPrefix}
+                        {formatPercent(row.deltaPercent)} %
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             );
@@ -159,31 +188,28 @@ export default function ComparePage() {
       </section>
 
       <section className="app-card">
-        <h2 className="app-card-title mb-5">
-          Куда направить следующий взнос
-        </h2>
+        <h2 className="app-card-title mb-5">Куда направить следующий взнос</h2>
 
         {underweightRows.length === 0 ? (
-          <div className="app-list-row">
-            <div>
-              <div className="app-text">Сильных недоборов не найдено</div>
-              <div className="app-text-small">
-                Фактическая структура сейчас близка к целевой.
-              </div>
+          <div className="rounded-[14px] border border-[var(--border)] bg-[var(--card)] p-4">
+            <div className="app-text">Сильных недоборов не найдено</div>
+            <div className="app-text-small">
+              Фактическая структура сейчас близка к целевой.
             </div>
           </div>
         ) : (
           <div className="space-y-3">
             {underweightRows.map((row, index) => (
-              <div key={row.category} className="app-list-row">
-                <div>
-                  <div className="app-text">
-                    {index === 0 ? "Приоритет" : "Второй приоритет"}:{" "}
-                    {row.category}
-                  </div>
-                  <div className="app-text-small">
-                    Недобор: {formatPercent(Math.abs(row.deltaPercent))} %
-                  </div>
+              <div
+                key={row.category}
+                className="rounded-[14px] border border-[var(--border)] bg-[var(--card)] p-4"
+              >
+                <div className="app-text">
+                  {index === 0 ? "Приоритет" : "Второй приоритет"}:{" "}
+                  {row.category}
+                </div>
+                <div className="app-text-small">
+                  Недобор: {formatPercent(Math.abs(row.deltaPercent))} %
                 </div>
               </div>
             ))}

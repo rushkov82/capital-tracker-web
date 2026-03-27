@@ -54,9 +54,9 @@ export default function OperationsList({
     <section className={cardClass}>
       <h2 className="app-card-title mb-5">История взносов</h2>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {operations.length === 0 && (
-          <div className="app-list-row">
+          <div className="rounded-[14px] border border-[var(--border)] bg-[var(--card)] p-4">
             <span className="app-text-small">Пока нет записей</span>
           </div>
         )}
@@ -65,9 +65,12 @@ export default function OperationsList({
           const isEditing = editingId === op.id;
 
           return (
-            <div key={op.id} className="app-list-row">
+            <div
+              key={op.id}
+              className="rounded-[14px] border border-[var(--border)] bg-[var(--card)] p-4"
+            >
               {isEditing ? (
-                <div className="w-full space-y-4">
+                <div className="space-y-3">
                   <FormRow label="Сумма">
                     <input
                       className={commonInputClass}
@@ -107,29 +110,36 @@ export default function OperationsList({
                     />
                   </FormRow>
 
-                  <div className="flex justify-end gap-2">
-                    <button onClick={cancelEditing} className="app-button-secondary">
+                  <div className="flex justify-end gap-2 pt-1">
+                    <button
+                      onClick={cancelEditing}
+                      className="app-button-secondary"
+                    >
                       Отмена
                     </button>
-                    <button onClick={saveEditedOperation} className="app-button-info">
-                      Сохранить изменения
+                    <button
+                      onClick={saveEditedOperation}
+                      className="app-button-info"
+                    >
+                      Сохранить
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="w-full space-y-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="app-label">
-                      {new Date(op.operation_date).toLocaleDateString("ru-RU")}
-                    </span>
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="app-label">
+                        {new Date(op.operation_date).toLocaleDateString("ru-RU")}
+                      </div>
+                      <div className="app-text mt-1">
+                        {op.asset_category || "Без категории"}
+                      </div>
+                    </div>
 
-                    <span className="app-badge">
-                      {op.asset_category || "Без категории"}
-                    </span>
-
-                    <span className="app-text text-emerald-500">
+                    <div className="app-text whitespace-nowrap text-emerald-500">
                       {formatNumber(op.amount)} ₽
-                    </span>
+                    </div>
                   </div>
 
                   <div className="app-text-small">
@@ -168,7 +178,7 @@ function FormRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="app-form-grid">
+    <div className="space-y-1">
       <label className="app-label">{label}</label>
       {children}
     </div>
