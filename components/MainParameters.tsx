@@ -29,9 +29,9 @@ export default function MainParameters({
 }: MainParametersProps) {
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-5">Основные параметры</h2>
+      <h2 className="app-card-title mb-4">Основные параметры</h2>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <FormRow label="Начальный капитал">
           <input
             className={commonInputClass}

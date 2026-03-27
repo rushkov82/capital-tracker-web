@@ -137,9 +137,7 @@ export default function PortfolioStructure({
         </div>
 
         {isOverflow && (
-          <div className="app-error-text">
-            Сумма долей превышает 100%
-          </div>
+          <div className="app-error-text">Сумма долей превышает 100%</div>
         )}
 
         <div className="flex items-center justify-between">
