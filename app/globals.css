@@ -1,3 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* SYSTEM THEME */
+
 :root {
   color-scheme: light dark;
 
@@ -25,8 +31,6 @@
     --text-primary: #e5e7eb;
     --text-secondary: #9ca3af;
     --text-muted: #6b7280;
-
-    --accent: #22c55e;
   }
 }
 
@@ -38,40 +42,29 @@
 
 html,
 body {
-  padding: 0;
   margin: 0;
+  padding: 0;
   background: var(--background);
   color: var(--foreground);
   overflow-x: hidden;
 }
 
-/* TYPOGRAPHY */
+/* UI */
 
-.app-page-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.app-page-subtitle {
-  font-size: 14px;
-  color: var(--text-secondary);
+.app-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
 }
 
 .app-card-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary);
 }
 
 .app-text {
   font-size: 14px;
-  color: var(--text-primary);
-}
-
-.app-text-small {
-  font-size: 12px;
-  color: var(--text-muted);
 }
 
 .app-label {
@@ -79,104 +72,17 @@ body {
   color: var(--text-secondary);
 }
 
-.app-micro {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.app-muted {
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-/* CARDS */
-
-.app-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
-  overflow: hidden;
-}
-
-/* INPUT */
-
 .app-input {
   width: 100%;
-  min-width: 0;
   height: 40px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: transparent;
   padding: 0 12px;
-  font-size: 14px;
-  color: var(--text-primary);
 }
-
-.app-input-readonly {
-  opacity: 0.6;
-}
-
-/* SELECT */
-
-.app-select {
-  width: 100%;
-  height: 40px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: transparent;
-  padding: 0 12px;
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-/* BUTTON */
-
-.app-button-primary {
-  height: 44px;
-  padding: 0 18px;
-  border-radius: 12px;
-  background: var(--accent);
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-}
-
-/* GRID */
-
-.app-form-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px;
-}
-
-.app-form-grid-wide {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px;
-}
-
-/* LIST */
 
 .app-list-row {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: 100%;
   min-width: 0;
-}
-
-/* DIVIDER */
-
-.app-divider {
-  height: 1px;
-  background: var(--border);
-}
-
-/* ERROR */
-
-.app-error-text {
-  font-size: 12px;
-  color: #ef4444;
 }
