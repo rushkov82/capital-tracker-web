@@ -68,15 +68,15 @@ export default function PortfolioStructure({
 
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-5">Структура портфеля</h2>
+      <h2 className="app-card-title mb-4">Структура портфеля</h2>
 
       <div className="mb-3 grid grid-cols-[150px_1fr_1fr] gap-4">
         <div />
-        <div className="app-micro">Доля %</div>
-        <div className="app-micro">Доходность %</div>
+        <div className="app-text-small">Доля %</div>
+        <div className="app-text-small">Доходность %</div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <PortfolioRow
           name="Акции/облигации"
           share={stocksBondsShare}
@@ -126,25 +126,25 @@ export default function PortfolioStructure({
         />
       </div>
 
-      <div className="app-divider my-5" />
+      <div className="app-divider my-4" />
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="app-label">Сумма долей</span>
-          <span className={isOverflow ? "app-error-text" : "app-label"}>
+          <span className={isOverflow ? "app-error-text" : "app-text"}>
             {totalShare.toFixed(1)} %
           </span>
         </div>
 
         {isOverflow && (
-          <div className="app-error-text">Сумма долей превышает 100%</div>
+          <div className="app-error-text">
+            Сумма долей превышает 100%
+          </div>
         )}
 
         <div className="flex items-center justify-between">
           <span className="app-label">Доходность портфеля</span>
-          <span className="text-[14px] font-medium text-[var(--text-primary)]">
-            {portfolioResult}
-          </span>
+          <span className="app-text">{portfolioResult}</span>
         </div>
       </div>
     </section>

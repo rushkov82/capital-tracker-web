@@ -32,20 +32,14 @@ export default function AppShell({
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-        <div className="border-b border-[var(--border)] bg-[var(--background)] px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--card)] text-sm font-semibold text-[var(--accent)]">
-              C
-            </div>
+      <div className="app-shell-root">
+        <div className="app-mobile-topbar">
+          <div className="app-brand">
+            <div className="app-brand-box">C</div>
 
             <div>
-              <div className="text-[16px] font-semibold text-[var(--text-primary)]">
-                Capital Tracker
-              </div>
-              <div className="text-[12px] text-[var(--text-muted)]">
-                Система капитала
-              </div>
+              <div className="app-card-title">Capital Tracker</div>
+              <div className="app-text-small">Система капитала</div>
             </div>
           </div>
 
@@ -58,10 +52,8 @@ export default function AppShell({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`rounded-[10px] px-3 py-2 text-[14px] font-medium transition whitespace-nowrap ${
-                      isActive
-                        ? "bg-[var(--card)] text-[var(--text-primary)]"
-                        : "text-[var(--text-secondary)] hover:bg-[var(--card)] hover:text-[var(--text-primary)]"
+                    className={`app-nav-item whitespace-nowrap ${
+                      isActive ? "app-nav-item-active" : ""
                     }`}
                   >
                     {item.label}
@@ -72,36 +64,26 @@ export default function AppShell({
           </div>
         </div>
 
-        <main className="min-w-0 px-4 py-4 sm:px-5">
-          {children}
-        </main>
+        <main className="app-main">{children}</main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      <div className="grid min-h-screen grid-cols-[260px_1fr]">
-        <aside className="border-r border-[var(--border)] bg-[var(--background)]">
-          <div className="flex h-full flex-col px-4 py-5">
-            <div className="mb-8 flex items-center gap-3 px-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--card)] text-sm font-semibold text-[var(--accent)]">
-                C
-              </div>
+    <div className="app-shell-root">
+      <div className="app-shell-layout">
+        <aside className="app-sidebar">
+          <div className="app-sidebar-inner">
+            <div className="mb-8 app-brand">
+              <div className="app-brand-box">C</div>
 
               <div>
-                <div className="text-[16px] font-semibold leading-5 text-[var(--text-primary)]">
-                  Capital Tracker
-                </div>
-                <div className="text-[12px] leading-4 text-[var(--text-muted)]">
-                  Система капитала
-                </div>
+                <div className="app-card-title">Capital Tracker</div>
+                <div className="app-text-small">Система капитала</div>
               </div>
             </div>
 
-            <div className="mb-3 px-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-              Навигация
-            </div>
+            <div className="mb-3 app-nav-title">Навигация</div>
 
             <nav className="space-y-1">
               {navItems.map((item) => {
@@ -111,10 +93,8 @@ export default function AppShell({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`block rounded-[10px] px-3 py-2.5 text-[14px] font-medium transition ${
-                      isActive
-                        ? "bg-[var(--card)] text-[var(--text-primary)]"
-                        : "text-[var(--text-secondary)] hover:bg-[var(--card)] hover:text-[var(--text-primary)]"
+                    className={`app-nav-item ${
+                      isActive ? "app-nav-item-active" : ""
                     }`}
                   >
                     {item.label}
@@ -124,11 +104,9 @@ export default function AppShell({
             </nav>
 
             <div className="mt-8 border-t border-[var(--border)] pt-4">
-              <div className="rounded-[14px] border border-[var(--border)] bg-[var(--card)] p-4">
-                <div className="mb-2 text-[14px] font-semibold text-[var(--text-primary)]">
-                  Философия
-                </div>
-                <div className="text-[12px] leading-6 text-[var(--text-muted)]">
+              <div className="app-card">
+                <div className="app-card-title mb-2">Философия</div>
+                <div className="app-text-small">
                   Не калькулятор на два вечера, а инструмент контроля капитала
                   на годы.
                 </div>
@@ -138,15 +116,13 @@ export default function AppShell({
         </aside>
 
         <div className="min-w-0">
-          <div className="border-b border-[var(--border)] bg-[var(--background)] px-8 py-4">
-            <div className="text-[14px] text-[var(--text-secondary)]">
+          <div className="app-topbar">
+            <div className="app-text-secondary">
               Инструмент стратегического планирования и контроля капитала
             </div>
           </div>
 
-          <main className="min-w-0 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
-            {children}
-          </main>
+          <main className="app-main">{children}</main>
         </div>
       </div>
     </div>
