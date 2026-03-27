@@ -54,9 +54,9 @@ export default function OperationsList({
     <section className={cardClass}>
       <h2 className="app-card-title mb-4">История взносов</h2>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {operations.length === 0 && (
-          <div className="rounded-[14px] border border-[var(--border)] bg-[var(--card)] px-4 py-3">
+          <div className="rounded-[12px] border border-[var(--border)] bg-[var(--card)] px-3 py-3">
             <span className="app-text-small">Пока нет записей</span>
           </div>
         )}
@@ -67,10 +67,10 @@ export default function OperationsList({
           return (
             <div
               key={op.id}
-              className="rounded-[14px] border border-[var(--border)] bg-[var(--card)] px-4 py-3"
+              className="rounded-[12px] border border-[var(--border)] bg-[var(--card)] px-3 py-3"
             >
               {isEditing ? (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <FormRow label="Сумма">
                     <input
                       className={commonInputClass}
@@ -113,13 +113,13 @@ export default function OperationsList({
                   <div className="flex justify-end gap-2 pt-1">
                     <button
                       onClick={cancelEditing}
-                      className="app-button-secondary"
+                      className="rounded-[10px] border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-[14px] leading-[18px] text-[var(--text-primary)]"
                     >
                       Отмена
                     </button>
                     <button
                       onClick={saveEditedOperation}
-                      className="app-button-info"
+                      className="rounded-[10px] bg-[#2563eb] px-3 py-2 text-[14px] leading-[18px] text-white"
                     >
                       Сохранить
                     </button>
@@ -128,18 +128,17 @@ export default function OperationsList({
               ) : (
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="app-label">
-                        {new Date(op.operation_date).toLocaleDateString("ru-RU")}
-                      </div>
-                      <div className="app-text mt-1">
-                        {op.asset_category || "Без категории"}
-                      </div>
+                    <div className="app-label">
+                      {new Date(op.operation_date).toLocaleDateString("ru-RU")}
                     </div>
 
                     <div className="app-text whitespace-nowrap text-emerald-500">
                       {formatNumber(op.amount)} ₽
                     </div>
+                  </div>
+
+                  <div className="app-text">
+                    {op.asset_category || "Без категории"}
                   </div>
 
                   <div className="app-text-small">
@@ -149,13 +148,13 @@ export default function OperationsList({
                   <div className="flex justify-end gap-2 pt-1">
                     <button
                       onClick={() => startEditing(op)}
-                      className="rounded-[10px] border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-[14px] leading-[20px] text-[var(--text-primary)]"
+                      className="rounded-[10px] border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-[14px] leading-[18px] text-[var(--text-primary)]"
                     >
                       Исправить
                     </button>
                     <button
                       onClick={() => deleteOperation(op.id)}
-                      className="rounded-[10px] bg-[#dc2626] px-4 py-2 text-[14px] leading-[20px] text-white"
+                      className="rounded-[10px] bg-[#dc2626] px-3 py-2 text-[14px] leading-[18px] text-white"
                     >
                       Удалить
                     </button>
