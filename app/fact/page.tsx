@@ -12,6 +12,7 @@ import ContributionForm from "@/components/ContributionForm";
 import FactDistribution from "@/components/FactDistribution";
 import OperationsList from "@/components/OperationsList";
 import { formatNumber, formatPercent } from "@/lib/calculations";
+import Link from "next/link";
 
 export default function CapitalPage() {
   const [operations, setOperations] = useState<Operation[]>([]);
@@ -78,7 +79,6 @@ export default function CapitalPage() {
     return getTotalFactAmount(groupedFact);
   }, [groupedFact]);
 
-  // 👇 только последние 3 операции
   const recentOperations = useMemo(() => {
     return [...operations]
       .sort((a, b) => b.operation_date.localeCompare(a.operation_date))
@@ -120,27 +120,41 @@ export default function CapitalPage() {
         formatPercent={formatPercent}
       />
 
-      <OperationsList
-        cardClass="app-card"
-        operations={recentOperations}
-        editingId={null}
-        editingAmount=""
-        setEditingAmount={() => {}}
-        editingComment=""
-        setEditingComment={() => {}}
-        editingDate=""
-        setEditingDate={() => {}}
-        editingCategory={ASSET_CATEGORIES[0]}
-        setEditingCategory={() => {}}
-        categories={[...ASSET_CATEGORIES]}
-        commonInputClass="app-input"
-        selectClass="app-select"
-        formatNumber={formatNumber}
-        startEditing={() => {}}
-        cancelEditing={() => {}}
-        saveEditedOperation={() => {}}
-        deleteOperation={() => {}}
-      />
+      {/* История */}
+      <section className="app-card">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="app-card-title">История взносов</h2>
+
+          <Link
+            href="/history"
+            className="text-[13px] text-[var(--text-secondary)]"
+          >
+            Показать все →
+          </Link>
+        </div>
+
+        <OperationsList
+          cardClass=""
+          operations={recentOperations}
+          editingId={null}
+          editingAmount=""
+          setEditingAmount={() => {}}
+          editingComment=""
+          setEditingComment={() => {}}
+          editingDate=""
+          setEditingDate={() => {}}
+          editingCategory={ASSET_CATEGORIES[0]}
+          setEditingCategory={() => {}}
+          categories={[...ASSET_CATEGORIES]}
+          commonInputClass="app-input"
+          selectClass="app-select"
+          formatNumber={formatNumber}
+          startEditing={() => {}}
+          cancelEditing={() => {}}
+          saveEditedOperation={() => {}}
+          deleteOperation={() => {}}
+        />
+      </section>
     </div>
   );
 }
