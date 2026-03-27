@@ -35,112 +35,72 @@ type PortfolioStructureProps = {
   portfolioResult: string;
 };
 
-export default function PortfolioStructure({
-  cardClass,
-  commonInputClass,
-  stocksBondsShare,
-  setStocksBondsShare,
-  stocksBondsReturn,
-  setStocksBondsReturn,
-  rubCashShare,
-  setRubCashShare,
-  rubCashReturn,
-  setRubCashReturn,
-  metalsShare,
-  setMetalsShare,
-  metalsReturn,
-  setMetalsReturn,
-  realEstateShare,
-  setRealEstateShare,
-  realEstateReturn,
-  setRealEstateReturn,
-  currencyShare,
-  setCurrencyShare,
-  currencyReturn,
-  setCurrencyReturn,
-  otherShare,
-  otherReturn,
-  setOtherReturn,
-  totalShare,
-  portfolioResult,
-}: PortfolioStructureProps) {
+export default function PortfolioStructure(props: PortfolioStructureProps) {
+  const {
+    cardClass,
+    commonInputClass,
+    stocksBondsShare,
+    setStocksBondsShare,
+    stocksBondsReturn,
+    setStocksBondsReturn,
+    rubCashShare,
+    setRubCashShare,
+    rubCashReturn,
+    setRubCashReturn,
+    metalsShare,
+    setMetalsShare,
+    metalsReturn,
+    setMetalsReturn,
+    realEstateShare,
+    setRealEstateShare,
+    realEstateReturn,
+    setRealEstateReturn,
+    currencyShare,
+    setCurrencyShare,
+    currencyReturn,
+    setCurrencyReturn,
+    otherShare,
+    otherReturn,
+    setOtherReturn,
+    totalShare,
+    portfolioResult,
+  } = props;
+
   const isOverflow = totalShare > 100;
 
   return (
     <section className={cardClass}>
       <h2 className="app-card-title mb-4">Структура портфеля</h2>
 
-      <div className="mb-3 grid grid-cols-[150px_1fr_1fr] gap-4">
-        <div />
-        <div className="app-text-small">Доля %</div>
-        <div className="app-text-small">Доходность %</div>
-      </div>
-
       <div className="space-y-3">
-        <PortfolioRow
-          name="Акции/облигации"
-          share={stocksBondsShare}
-          onShareChange={setStocksBondsShare}
-          rate={stocksBondsReturn}
-          onRateChange={setStocksBondsReturn}
-          inputClass={commonInputClass}
-        />
-        <PortfolioRow
-          name="Кэш в рублях"
-          share={rubCashShare}
-          onShareChange={setRubCashShare}
-          rate={rubCashReturn}
-          onRateChange={setRubCashReturn}
-          inputClass={commonInputClass}
-        />
-        <PortfolioRow
-          name="Драгметаллы"
-          share={metalsShare}
-          onShareChange={setMetalsShare}
-          rate={metalsReturn}
-          onRateChange={setMetalsReturn}
-          inputClass={commonInputClass}
-        />
-        <PortfolioRow
-          name="Недвижимость"
-          share={realEstateShare}
-          onShareChange={setRealEstateShare}
-          rate={realEstateReturn}
-          onRateChange={setRealEstateReturn}
-          inputClass={commonInputClass}
-        />
-        <PortfolioRow
-          name="Валюта"
-          share={currencyShare}
-          onShareChange={setCurrencyShare}
-          rate={currencyReturn}
-          onRateChange={setCurrencyReturn}
-          inputClass={commonInputClass}
-        />
-        <AutoShareRow
+        <MobileRow name="Акции/облигации" share={stocksBondsShare} setShare={setStocksBondsShare} rate={stocksBondsReturn} setRate={setStocksBondsReturn} input={commonInputClass} />
+        <MobileRow name="Кэш в рублях" share={rubCashShare} setShare={setRubCashShare} rate={rubCashReturn} setRate={setRubCashReturn} input={commonInputClass} />
+        <MobileRow name="Драгметаллы" share={metalsShare} setShare={setMetalsShare} rate={metalsReturn} setRate={setMetalsReturn} input={commonInputClass} />
+        <MobileRow name="Недвижимость" share={realEstateShare} setShare={setRealEstateShare} rate={realEstateReturn} setRate={setRealEstateReturn} input={commonInputClass} />
+        <MobileRow name="Валюта" share={currencyShare} setShare={setCurrencyShare} rate={currencyReturn} setRate={setCurrencyReturn} input={commonInputClass} />
+
+        <MobileRow
           name="Прочее"
-          share={otherShare}
+          share={Math.max(otherShare, 0).toFixed(1)}
+          setShare={() => {}}
           rate={otherReturn}
-          onRateChange={setOtherReturn}
-          inputClass={commonInputClass}
+          setRate={setOtherReturn}
+          input={commonInputClass}
+          readonly
         />
       </div>
 
       <div className="app-divider my-4" />
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
+        <div className="flex justify-between">
           <span className="app-label">Сумма долей</span>
           <span className={isOverflow ? "app-error-text" : "app-text"}>
             {totalShare.toFixed(1)} %
           </span>
         </div>
 
-        {isOverflow && (
-          <div className="app-error-text">Сумма долей превышает 100%</div>
-        )}
-
-        <div className="flex items-center justify-between">
+        <div className="flex justify-between">
           <span className="app-label">Доходность портфеля</span>
           <span className="app-text">{portfolioResult}</span>
         </div>
@@ -149,67 +109,24 @@ export default function PortfolioStructure({
   );
 }
 
-function PortfolioRow({
-  name,
-  share,
-  onShareChange,
-  rate,
-  onRateChange,
-  inputClass,
-}: {
-  name: string;
-  share: string;
-  onShareChange: (value: string) => void;
-  rate: string;
-  onRateChange: (value: string) => void;
-  inputClass: string;
-}) {
+function MobileRow({ name, share, setShare, rate, setRate, input, readonly }: any) {
   return (
-    <div className="app-form-grid-wide">
-      <div className="app-label">{name}</div>
-      <input
-        className={inputClass}
-        value={share}
-        onChange={(e) => onShareChange(e.target.value)}
-      />
-      <input
-        className={inputClass}
-        value={rate}
-        onChange={(e) => onRateChange(e.target.value)}
-      />
-    </div>
-  );
-}
+    <div className="app-list-row">
+      <div className="app-text">{name}</div>
 
-function AutoShareRow({
-  name,
-  share,
-  rate,
-  onRateChange,
-  inputClass,
-}: {
-  name: string;
-  share: number;
-  rate: string;
-  onRateChange: (value: string) => void;
-  inputClass: string;
-}) {
-  const displayShare = share < 0 ? 0 : share;
-
-  return (
-    <div className="app-form-grid-wide">
-      <div className="app-label">{name}</div>
-      <input
-        className={`${inputClass} app-input-readonly`}
-        value={displayShare.toFixed(1)}
-        readOnly
-        tabIndex={-1}
-      />
-      <input
-        className={inputClass}
-        value={rate}
-        onChange={(e) => onRateChange(e.target.value)}
-      />
+      <div className="flex gap-2 min-w-0">
+        <input
+          className={`${input} w-full ${readonly ? "app-input-readonly" : ""}`}
+          value={share}
+          onChange={(e) => setShare(e.target.value)}
+          readOnly={readonly}
+        />
+        <input
+          className={`${input} w-full`}
+          value={rate}
+          onChange={(e) => setRate(e.target.value)}
+        />
+      </div>
     </div>
   );
 }

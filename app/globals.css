@@ -1,344 +1,182 @@
-@import "tailwindcss";
-
-/* =========================================
-   DESIGN TOKENS
-========================================= */
-
 :root {
-  --background: #181818;
-  --foreground: #eeeeee;
+  color-scheme: light dark;
 
-  --card: #1f1f1f;
-  --card-soft: #242424;
-  --border: #2a2a2a;
+  --background: #ffffff;
+  --foreground: #0f172a;
 
-  --text-primary: #f2f2f2;
-  --text-secondary: #a3a3a3;
-  --text-muted: #7c7c7c;
+  --card: #ffffff;
+  --border: #e5e7eb;
 
-  --accent: #3ecf8e;
-  --accent-hover: #53d899;
-  --accent-foreground: #0f1720;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
 
-  --danger: #e05d5d;
-  --danger-bg: rgba(224, 93, 93, 0.1);
-  --danger-border: rgba(224, 93, 93, 0.2);
-
-  --info: #2f6fed;
-  --info-hover: #3c7af3;
-
-  --radius-card: 14px;
-  --radius-control: 10px;
-
-  --font-family-app: Inter, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-
-  /* TYPOGRAPHY SCALE */
-  --font-size-page-title: 20px;
-  --line-height-page-title: 26px;
-
-  --font-size-page-subtitle: 14px;
-  --line-height-page-subtitle: 20px;
-
-  --font-size-card-title: 14px;
-  --line-height-card-title: 20px;
-
-  --font-size-body: 14px;
-  --line-height-body: 20px;
-
-  --font-size-small: 12px;
-  --line-height-small: 16px;
-
-  /* CONTROLS */
-  --control-height: 40px;
+  --accent: #22c55e;
 }
 
-/* =========================================
-   BASE
-========================================= */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b0f14;
+    --foreground: #e5e7eb;
 
-body {
-  margin: 0;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-family-app);
-  font-size: var(--font-size-body);
-  line-height: var(--line-height-body);
+    --card: #11161c;
+    --border: #1f2937;
+
+    --text-primary: #e5e7eb;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+
+    --accent: #22c55e;
+  }
 }
+
+/* RESET */
 
 * {
   box-sizing: border-box;
 }
 
-/* =========================================
-   TYPOGRAPHY
-========================================= */
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+/* TYPOGRAPHY */
 
 .app-page-title {
-  font-size: var(--font-size-page-title);
-  line-height: var(--line-height-page-title);
+  font-size: 22px;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .app-page-subtitle {
-  font-size: var(--font-size-page-subtitle);
-  line-height: var(--line-height-page-subtitle);
+  font-size: 14px;
   color: var(--text-secondary);
 }
 
 .app-card-title {
-  font-size: var(--font-size-card-title);
-  line-height: var(--line-height-card-title);
+  font-size: 15px;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .app-text {
-  font-size: var(--font-size-body);
-}
-
-.app-text-secondary {
-  font-size: var(--font-size-body);
-  color: var(--text-secondary);
+  font-size: 14px;
+  color: var(--text-primary);
 }
 
 .app-text-small {
-  font-size: var(--font-size-small);
+  font-size: 12px;
   color: var(--text-muted);
 }
 
 .app-label {
-  font-size: var(--font-size-body);
+  font-size: 14px;
   color: var(--text-secondary);
 }
 
 .app-micro {
-  font-size: var(--font-size-small);
+  font-size: 12px;
   color: var(--text-muted);
 }
 
-/* =========================================
-   LAYOUT
-========================================= */
-
-.app-shell-root {
-  min-height: 100vh;
-  background: var(--background);
+.app-muted {
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
-.app-shell-layout {
-  min-height: 100vh;
-}
-
-@media (min-width: 1024px) {
-  .app-shell-layout {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-  }
-}
-
-.app-main {
-  padding: 14px;
-}
-
-@media (min-width: 640px) {
-  .app-main {
-    padding: 18px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .app-main {
-    padding: 20px 28px;
-  }
-}
-
-/* =========================================
-   SIDEBAR / TOPBAR
-========================================= */
-
-.app-sidebar {
-  border-right: 1px solid var(--border);
-}
-
-.app-sidebar-inner {
-  display: flex;
-  flex-direction: column;
-  padding: 18px 14px;
-}
-
-.app-topbar {
-  border-bottom: 1px solid var(--border);
-  padding: 14px 24px;
-}
-
-.app-mobile-topbar {
-  border-bottom: 1px solid var(--border);
-  padding: 14px;
-}
-
-/* =========================================
-   NAV
-========================================= */
-
-.app-nav-item {
-  display: block;
-  padding: 8px 10px;
-  border-radius: 10px;
-  font-size: var(--font-size-body);
-  color: var(--text-secondary);
-}
-
-.app-nav-item:hover {
-  background: var(--card);
-  color: var(--text-primary);
-}
-
-.app-nav-item-active {
-  background: var(--card);
-  color: var(--text-primary);
-}
-
-/* =========================================
-   BRAND
-========================================= */
-
-.app-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.app-brand-box {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--accent);
-}
-
-/* =========================================
-   CARDS
-========================================= */
+/* CARDS */
 
 .app-card {
-  border: 1px solid var(--border);
   background: var(--card);
-  border-radius: var(--radius-card);
-  padding: 14px;
-}
-
-@media (min-width: 768px) {
-  .app-card {
-    padding: 18px;
-  }
-}
-
-/* =========================================
-   LIST ROW
-========================================= */
-
-.app-list-row {
   border: 1px solid var(--border);
-  background: var(--card-soft);
-  border-radius: var(--radius-control);
-  padding: 10px 12px;
+  border-radius: 14px;
+  padding: 16px;
+  overflow: hidden;
 }
 
-/* =========================================
-   FORMS
-========================================= */
+/* INPUT */
 
-.app-form-grid {
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 10px;
-  align-items: center;
-}
-
-.app-form-grid-wide {
-  display: grid;
-  grid-template-columns: 140px 1fr 1fr;
-  gap: 10px;
-  align-items: center;
-}
-
-.app-input,
-.app-select {
-  height: var(--control-height);
-  padding: 0 10px;
-  border-radius: var(--radius-control);
+.app-input {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  border-radius: 10px;
   border: 1px solid var(--border);
-  background: var(--card);
+  background: transparent;
+  padding: 0 12px;
+  font-size: 14px;
   color: var(--text-primary);
-}
-
-.app-input:focus,
-.app-select:focus {
-  outline: none;
-  border-color: var(--accent);
 }
 
 .app-input-readonly {
   opacity: 0.6;
 }
 
-/* =========================================
-   BUTTONS
-========================================= */
+/* SELECT */
+
+.app-select {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  padding: 0 12px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+/* BUTTON */
 
 .app-button-primary {
-  height: var(--control-height);
-  padding: 0 16px;
-  border-radius: var(--radius-control);
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
   background: var(--accent);
-  color: #052e16;
-  font-size: var(--font-size-body);
-}
-
-.app-button-secondary {
-  height: var(--control-height);
-  padding: 0 14px;
-  border-radius: var(--radius-control);
-  border: 1px solid var(--border);
-  background: var(--card-soft);
-}
-
-.app-button-info {
-  height: var(--control-height);
-  padding: 0 14px;
-  border-radius: var(--radius-control);
-  background: var(--info);
   color: white;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
 }
 
-.app-button-danger {
-  height: var(--control-height);
-  padding: 0 14px;
-  border-radius: var(--radius-control);
-  background: var(--danger);
-  color: white;
+/* GRID */
+
+.app-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
 }
 
-/* =========================================
-   MISC
-========================================= */
+.app-form-grid-wide {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+/* LIST */
+
+.app-list-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* DIVIDER */
 
 .app-divider {
   height: 1px;
   background: var(--border);
 }
 
-.app-error-text {
-  color: var(--danger);
-  font-size: var(--font-size-small);
-}
+/* ERROR */
 
-.app-error-box {
-  border: 1px solid var(--danger-border);
-  background: var(--danger-bg);
-  padding: 10px 12px;
-  border-radius: var(--radius-control);
+.app-error-text {
+  font-size: 12px;
+  color: #ef4444;
 }
