@@ -52,62 +52,245 @@ body {
     sans-serif;
 }
 
+/* LAYOUT */
+
+.app-shell-root {
+  min-height: 100vh;
+  background: var(--background);
+}
+
+.app-shell-layout {
+  min-height: 100vh;
+}
+
+.app-main {
+  padding: 16px;
+}
+
+.app-sidebar-desktop {
+  display: none;
+}
+
+.app-topbar-desktop {
+  display: none;
+}
+
+.app-topbar-mobile {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .app-shell-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+  }
+
+  .app-sidebar-desktop {
+    display: block;
+  }
+
+  .app-topbar-desktop {
+    display: block;
+  }
+
+  .app-topbar-mobile {
+    display: none;
+  }
+
+  .app-main {
+    padding: 20px 28px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .app-main {
+    padding: 18px;
+  }
+}
+
+/* SIDEBAR / TOPBAR */
+
+.app-sidebar {
+  border-right: 1px solid var(--border);
+}
+
+.app-sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px;
+}
+
+.app-topbar {
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+}
+
+.app-mobile-topbar {
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+}
+
+/* BRAND / NAV */
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-brand-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.app-nav-title {
+  font-size: 11px;
+  line-height: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  padding: 0 8px;
+  font-weight: 600;
+}
+
+.app-nav-item {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.app-nav-item:hover {
+  background: var(--card);
+  color: var(--text-primary);
+}
+
+.app-nav-item-active {
+  background: var(--card);
+  color: var(--text-primary);
+}
+
 /* TYPOGRAPHY */
 
 .app-page-title {
   font-size: 22px;
+  line-height: 28px;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .app-page-subtitle {
   font-size: 14px;
+  line-height: 20px;
   color: var(--text-secondary);
 }
 
 .app-card-title {
   font-size: 15px;
+  line-height: 22px;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .app-text {
   font-size: 14px;
+  line-height: 20px;
+  color: var(--text-primary);
+}
+
+.app-text-secondary {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-secondary);
 }
 
 .app-text-small {
   font-size: 12px;
+  line-height: 16px;
   color: var(--text-muted);
 }
 
 .app-label {
   font-size: 14px;
+  line-height: 20px;
   color: var(--text-secondary);
 }
 
-/* UI */
+.app-micro {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+}
+
+.app-muted {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-muted);
+}
+
+/* CARDS / UI */
 
 .app-card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 16px;
+  overflow: hidden;
 }
 
 .app-input,
 .app-select {
   width: 100%;
+  min-width: 0;
   height: 36px;
   border-radius: 10px;
   border: 1px solid var(--border);
   padding: 0 12px;
+  background: transparent;
+  color: var(--text-primary);
   font-size: 14px;
+  line-height: 20px;
 }
 
-/* LIST */
+.app-input-readonly {
+  opacity: 0.6;
+}
 
 .app-list-row {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
+}
+
+.app-divider {
+  height: 1px;
+  background: var(--border);
+}
+
+.app-error-text {
+  font-size: 12px;
+  line-height: 16px;
+  color: #ef4444;
+}
+
+.app-error-box {
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #ef4444;
 }
 
 /* BUTTON SYSTEM */
@@ -116,21 +299,18 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   height: 36px;
   padding: 0 14px;
-
   border-radius: 10px;
   border: 1px solid var(--border);
-
   background: transparent;
   color: var(--text-primary);
-
   font-size: 14px;
+  line-height: 20px;
   font-weight: 500;
-
+  text-decoration: none;
   cursor: pointer;
-  transition: 0.15s;
+  transition: 0.15s ease;
 }
 
 .app-button:hover {
