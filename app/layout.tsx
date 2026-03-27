@@ -1,27 +1,28 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
 
-const inter = Inter({
-  subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "600", "700"],
-});
-
-export const metadata: Metadata = {
+export const metadata = {
   title: "Capital Tracker",
-  description: "Инструмент стратегического планирования и контроля капитала",
+  description: "Система капитала",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="ru">
-      <body className={inter.className}>
-        <AppShell>{children}</AppShell>
+      <body>
+        <div className="flex min-h-screen">
+          {/* 👉 САЙДБАР СКРЫВАЕМ НА МОБИЛЕ */}
+          <div className="hidden lg:block">
+            <AppShell />
+          </div>
+
+          {/* 👉 КОНТЕНТ НА ВСЮ ШИРИНУ */}
+          <main className="flex-1 w-full">{children}</main>
+        </div>
       </body>
     </html>
   );
