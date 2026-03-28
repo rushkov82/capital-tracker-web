@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { deleteOperation, updateOperation } from "@/lib/operations";
 
@@ -10,7 +12,7 @@ type Operation = {
   created_at: string;
 };
 
-type Props = {
+type OperationsListProps = {
   cardClass: string;
   operations: Operation[];
   formatNumber: (value: number) => string;
@@ -22,7 +24,7 @@ export default function OperationsList({
   operations,
   formatNumber,
   onReload,
-}: Props) {
+}: OperationsListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingAmount, setEditingAmount] = useState("");
   const [editingComment, setEditingComment] = useState("");
@@ -33,20 +35,25 @@ export default function OperationsList({
     setEditingComment(op.comment || "");
   }
 
-  async function saveEdit(id: string) {
+  function cancelEdit() {
+    setEditingId(null);
+    setEditingAmount("");
+    setEditingComment("");
+  }
+
+  async function handleSave(id: string) {
     const amount = Number(editingAmount);
 
-    if (!amount || amount <= 0) return;
+    if (!amount || Number.isNaN(amount) || amount <= 0) {
+      return;
+    }
 
     await updateOperation(id, {
       amount,
       comment: editingComment,
     });
 
-    setEditingId(null);
-    setEditingAmount("");
-    setEditingComment("");
-
+    cancelEdit();
     await onReload?.();
   }
 
@@ -60,7 +67,7 @@ export default function OperationsList({
       {operations.length === 0 ? (
         <div className="app-text-small">Пока нет записей</div>
       ) : (
-        <div className="border-t border-[var(--border)] pt-3">
+        <div className="border-t border-[var(--border)] pt-3 space-y-0">
           {operations.map((op, index) => {
             const isLast = index === operations.length - 1;
             const isEditing = editingId === op.id;
@@ -68,11 +75,9 @@ export default function OperationsList({
             return (
               <div
                 key={op.id}
-                className={`py-3 ${
-                  isLast ? "" : "border-b border-[var(--border)]"
-                }`}
+                className={`py-3 ${isLast ? "" : "border-b border-[var(--border)]"}`}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <div className="app-label">
                     {new Date(op.operation_date).toLocaleDateString("ru-RU")}
                   </div>
@@ -84,7 +89,7 @@ export default function OperationsList({
                       onChange={(e) => setEditingAmount(e.target.value)}
                     />
                   ) : (
-                    <div className="app-text">
+                    <div className="app-text whitespace-nowrap">
                       {formatNumber(op.amount)} ₽
                     </div>
                   )}
@@ -99,6 +104,7 @@ export default function OperationsList({
                     className="app-input mt-2"
                     value={editingComment}
                     onChange={(e) => setEditingComment(e.target.value)}
+                    placeholder="Комментарий"
                   />
                 ) : (
                   <div className="app-text-small mt-0.5">
@@ -109,30 +115,24 @@ export default function OperationsList({
                 <div className="mt-2 flex justify-end gap-3">
                   {isEditing ? (
                     <>
-                      <button
-                        className="app-text-secondary"
-                        onClick={() => setEditingId(null)}
-                      >
+                      <button onClick={cancelEdit} className="app-text-secondary">
                         Отмена
                       </button>
-                      <button
-                        className="app-button"
-                        onClick={() => saveEdit(op.id)}
-                      >
+                      <button onClick={() => handleSave(op.id)} className="app-button">
                         Сохранить
                       </button>
                     </>
                   ) : (
                     <>
                       <button
-                        className="app-text-secondary"
                         onClick={() => startEdit(op)}
+                        className="app-text-secondary"
                       >
                         Изменить
                       </button>
                       <button
-                        className="text-[14px] text-[#dc2626]"
                         onClick={() => handleDelete(op.id)}
+                        className="text-[14px] leading-[20px] text-[#dc2626]"
                       >
                         Удалить
                       </button>

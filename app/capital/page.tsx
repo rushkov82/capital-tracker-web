@@ -90,21 +90,21 @@ export default function CapitalPage() {
   }, [operations]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="space-y-3">
         <div>
           <h1 className="app-page-title">Капитал</h1>
           <p className="app-page-subtitle">
-            Реальные деньги, структура и контроль
+            Реальные деньги, история взносов и текущая структура
           </p>
         </div>
 
-        <div className="app-card">
+        <section className="app-card">
           <div className="app-text-small mb-1">Текущий капитал</div>
           <div className="text-[28px] leading-[32px] font-semibold text-[var(--accent)]">
             {formatNumber(totalFactAmount)} ₽
           </div>
-        </div>
+        </section>
       </div>
 
       {errorText && <div className="app-error-box">{errorText}</div>}
@@ -126,7 +126,7 @@ export default function CapitalPage() {
       />
 
       <section className="app-card">
-        <h2 className="app-card-title mb-3">История взносов</h2>
+        <h2 className="app-card-title mb-4">История взносов</h2>
 
         <OperationsList
           cardClass=""
@@ -135,7 +135,7 @@ export default function CapitalPage() {
           onReload={loadOperations}
         />
 
-        <div className="border-t border-[var(--border)] mt-3 pt-3">
+        <div className="border-t border-[var(--border)] mt-4 pt-3">
           <div className="flex justify-end">
             <Link href="/history" className="app-button">
               Все операции →

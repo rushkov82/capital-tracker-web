@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import type { Session } from "@supabase/supabase-js";
 
 export default function AuthStatus() {
   const supabase = createClient();
@@ -24,9 +25,11 @@ export default function AuthStatus() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setEmail(session?.user?.email ?? null);
-    });
+    } = supabase.auth.onAuthStateChange(
+      (_event: string, session: Session | null) => {
+        setEmail(session?.user?.email ?? null);
+      }
+    );
 
     return () => {
       active = false;

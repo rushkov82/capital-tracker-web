@@ -31,15 +31,15 @@ export default function ContributionForm({
 }: ContributionFormProps) {
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-3">Сделать взнос</h2>
+      <h2 className="app-card-title mb-4">Сделать взнос</h2>
 
       <div className="space-y-3">
-        <FormRow label="Сумма пополнения">
+        <FormRow label="Сумма пополнения" hint="₽">
           <input
             className={commonInputClass}
             value={actualContribution}
             onChange={(e) => setActualContribution(e.target.value)}
-            placeholder="₽"
+            placeholder="Например: 10000"
           />
         </FormRow>
 
@@ -50,7 +50,9 @@ export default function ContributionForm({
             onChange={(e) => setContributionCategory(e.target.value)}
           >
             {categories.map((category) => (
-              <option key={category}>{category}</option>
+              <option key={category} value={category}>
+                {category}
+              </option>
             ))}
           </select>
         </FormRow>
@@ -64,11 +66,12 @@ export default function ContributionForm({
           />
         </FormRow>
 
-        <FormRow label="Комментарий">
+        <FormRow label="Комментарий" hint="необязательно">
           <input
             className={commonInputClass}
             value={contributionComment}
             onChange={(e) => setContributionComment(e.target.value)}
+            placeholder="Например: докупил на просадке"
           />
         </FormRow>
 
@@ -84,14 +87,19 @@ export default function ContributionForm({
 
 function FormRow({
   label,
+  hint,
   children,
 }: {
   label: string;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-1">
-      <label className="app-text-small">{label}</label>
+      <div className="flex items-center justify-between gap-3">
+        <label className="app-label">{label}</label>
+        {hint ? <span className="app-text-small">{hint}</span> : <span />}
+      </div>
       {children}
     </div>
   );
