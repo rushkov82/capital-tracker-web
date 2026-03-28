@@ -24,6 +24,9 @@ export default function CapitalPage() {
   const [contributionCategory, setContributionCategory] = useState<string>(
     ASSET_CATEGORIES[0]
   );
+  const [operationType, setOperationType] = useState<"income" | "expense">(
+    "income"
+  );
 
   useEffect(() => {
     void loadOperations();
@@ -56,12 +59,14 @@ export default function CapitalPage() {
         comment: contributionComment,
         operation_date: contributionDate,
         asset_category: contributionCategory,
+        type: operationType,
       });
 
       setActualContribution("");
       setContributionComment("");
       setContributionDate(todayString());
       setContributionCategory(ASSET_CATEGORIES[0]);
+      setOperationType("income");
 
       await loadOperations();
     } catch (error) {
@@ -101,7 +106,10 @@ export default function CapitalPage() {
 
         <section className="app-card">
           <div className="app-text-small mb-1">Текущий капитал</div>
-          <div className="text-[28px] leading-[32px] font-semibold text-[var(--accent)]">
+          <div
+            className="text-[28px] leading-[32px] font-semibold"
+            style={{ color: totalFactAmount < 0 ? "#dc2626" : "var(--accent)" }}
+          >
             {formatNumber(totalFactAmount)} ₽
           </div>
         </section>
@@ -122,6 +130,8 @@ export default function CapitalPage() {
         setContributionDate={setContributionDate}
         contributionComment={contributionComment}
         setContributionComment={setContributionComment}
+        operationType={operationType}
+        setOperationType={setOperationType}
         onSave={saveContribution}
       />
 

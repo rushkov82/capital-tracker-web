@@ -18,7 +18,7 @@ export default function FactDistribution({
   formatNumber,
   formatPercent,
 }: FactDistributionProps) {
-  const filteredItems = items.filter((item) => item.amount > 0);
+  const filteredItems = items.filter((item) => item.amount !== 0);
 
   return (
     <section className={cardClass}>
@@ -34,8 +34,9 @@ export default function FactDistribution({
         <div className="space-y-0">
           {filteredItems.map((item, index) => {
             const percent =
-              totalAmount > 0 ? (item.amount / totalAmount) * 100 : 0;
+              totalAmount !== 0 ? (item.amount / totalAmount) * 100 : 0;
             const isLast = index === filteredItems.length - 1;
+            const isNegative = item.amount < 0;
 
             return (
               <div
@@ -48,7 +49,10 @@ export default function FactDistribution({
                 <div className="app-label text-right">
                   {formatPercent(percent)} %
                 </div>
-                <div className="app-label text-right">
+                <div
+                  className="app-label text-right"
+                  style={{ color: isNegative ? "#dc2626" : undefined }}
+                >
                   {formatNumber(item.amount)} ₽
                 </div>
               </div>
@@ -58,7 +62,10 @@ export default function FactDistribution({
           <div className="border-t border-[var(--border)] mt-2 pt-3 grid grid-cols-[1.2fr_0.8fr_1fr] gap-3 items-center">
             <div className="app-label">Итого</div>
             <div />
-            <div className="app-label text-right">
+            <div
+              className="app-label text-right"
+              style={{ color: totalAmount < 0 ? "#dc2626" : undefined }}
+            >
               {formatNumber(totalAmount)} ₽
             </div>
           </div>

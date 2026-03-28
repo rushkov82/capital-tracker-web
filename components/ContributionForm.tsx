@@ -11,6 +11,8 @@ type ContributionFormProps = {
   setContributionDate: (value: string) => void;
   contributionComment: string;
   setContributionComment: (value: string) => void;
+  operationType: "income" | "expense";
+  setOperationType: (value: "income" | "expense") => void;
   onSave: () => void;
 };
 
@@ -27,19 +29,62 @@ export default function ContributionForm({
   setContributionDate,
   contributionComment,
   setContributionComment,
+  operationType,
+  setOperationType,
   onSave,
 }: ContributionFormProps) {
+  const isIncome = operationType === "income";
+  const isExpense = operationType === "expense";
+
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-4">Сделать взнос</h2>
+      <h2 className="app-card-title mb-4">
+        {isIncome ? "Сделать взнос" : "Вывод средств"}
+      </h2>
 
       <div className="space-y-3">
-        <FormRow label="Сумма пополнения" hint="₽">
+        <div className="space-y-2">
+          <div className="app-label">Тип операции</div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setOperationType("income")}
+              className={
+                isIncome
+                  ? "app-button"
+                  : "h-[36px] px-[14px] rounded-[10px] border border-[var(--border)] text-[14px] font-medium text-[var(--text-secondary)]"
+              }
+            >
+              Пополнение
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setOperationType("expense")}
+              className={
+                isExpense
+                  ? "app-button"
+                  : "h-[36px] px-[14px] rounded-[10px] border border-[var(--border)] text-[14px] font-medium text-[var(--text-secondary)]"
+              }
+            >
+              Вывод
+            </button>
+          </div>
+
+          {isExpense && (
+            <div className="app-text-small" style={{ color: "#dc2626" }}>
+              Это уменьшит текущий капитал
+            </div>
+          )}
+        </div>
+
+        <FormRow label={isIncome ? "Сумма пополнения" : "Сумма вывода"} hint="₽">
           <input
             className={commonInputClass}
             value={actualContribution}
             onChange={(e) => setActualContribution(e.target.value)}
-            placeholder="Например: 10000"
+            placeholder={isIncome ? "Например: 10000" : "Например: 5000"}
           />
         </FormRow>
 
@@ -71,7 +116,11 @@ export default function ContributionForm({
             className={commonInputClass}
             value={contributionComment}
             onChange={(e) => setContributionComment(e.target.value)}
-            placeholder="Например: докупил на просадке"
+            placeholder={
+              isIncome
+                ? "Например: докупил на просадке"
+                : "Например: вывел на личные расходы"
+            }
           />
         </FormRow>
 

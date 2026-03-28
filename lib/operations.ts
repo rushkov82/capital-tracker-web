@@ -7,6 +7,7 @@ export type Operation = {
   operation_date: string;
   asset_category: string | null;
   created_at: string;
+  type: "income" | "expense";
 };
 
 const STORAGE_KEY = "capital_operations";
@@ -46,7 +47,7 @@ export async function fetchOperations(): Promise<Operation[]> {
 
   const { data, error } = await supabase
     .from("operations")
-    .select("id, amount, comment, date, category, created_at")
+    .select("id, amount, comment, date, category, created_at, type")
     .eq("user_id", user.id)
     .order("date", { ascending: false })
     .order("created_at", { ascending: false });
@@ -62,6 +63,7 @@ export async function fetchOperations(): Promise<Operation[]> {
     operation_date: item.date,
     asset_category: item.category,
     created_at: item.created_at,
+    type: (item.type ?? "income") as "income" | "expense",
   }));
 }
 
@@ -70,6 +72,7 @@ export async function createOperation(data: {
   comment: string;
   operation_date: string;
   asset_category: string;
+  type: "income" | "expense";
 }) {
   const user = await getCurrentUser();
 
@@ -83,6 +86,7 @@ export async function createOperation(data: {
       operation_date: data.operation_date,
       asset_category: data.asset_category,
       created_at: new Date().toISOString(),
+      type: data.type,
     };
 
     writeLocalOperations([newItem, ...current]);
@@ -98,6 +102,7 @@ export async function createOperation(data: {
       category: data.asset_category,
       date: data.operation_date,
       comment: data.comment || null,
+      type: data.type,
     },
   ]);
 
@@ -113,6 +118,7 @@ export async function updateOperation(
     comment: string;
     operation_date?: string;
     asset_category?: string;
+    type?: "income" | "expense";
   }
 ) {
   const user = await getCurrentUser();
@@ -129,6 +135,7 @@ export async function updateOperation(
         comment: data.comment || null,
         operation_date: data.operation_date ?? item.operation_date,
         asset_category: data.asset_category ?? item.asset_category,
+        type: data.type ?? item.type,
       };
     });
 
@@ -143,6 +150,7 @@ export async function updateOperation(
     comment: string | null;
     date?: string;
     category?: string;
+    type?: "income" | "expense";
   } = {
     amount: data.amount,
     comment: data.comment || null,
@@ -150,6 +158,7 @@ export async function updateOperation(
 
   if (data.operation_date) payload.date = data.operation_date;
   if (data.asset_category) payload.category = data.asset_category;
+  if (data.type) payload.type = data.type;
 
   const { error } = await supabase
     .from("operations")

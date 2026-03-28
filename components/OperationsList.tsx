@@ -10,6 +10,7 @@ type Operation = {
   operation_date: string;
   asset_category: string | null;
   created_at: string;
+  type: "income" | "expense";
 };
 
 type OperationsListProps = {
@@ -71,6 +72,9 @@ export default function OperationsList({
           {operations.map((op, index) => {
             const isLast = index === operations.length - 1;
             const isEditing = editingId === op.id;
+            const isExpense = op.type === "expense";
+            const amountColor = isExpense ? "#dc2626" : "#16a34a";
+            const amountPrefix = isExpense ? "−" : "+";
 
             return (
               <div
@@ -89,8 +93,11 @@ export default function OperationsList({
                       onChange={(e) => setEditingAmount(e.target.value)}
                     />
                   ) : (
-                    <div className="app-text whitespace-nowrap">
-                      {formatNumber(op.amount)} ₽
+                    <div
+                      className="app-text whitespace-nowrap font-semibold"
+                      style={{ color: amountColor }}
+                    >
+                      {amountPrefix} {formatNumber(op.amount)} ₽
                     </div>
                   )}
                 </div>
