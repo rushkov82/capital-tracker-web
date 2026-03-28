@@ -46,14 +46,14 @@ export default function ContributionForm({
         <div className="space-y-2">
           <div className="app-label">Тип операции</div>
 
-          <div className="flex gap-2">
+          <div className="inline-flex rounded-[10px] border border-[var(--border)] p-1">
             <button
               type="button"
               onClick={() => setOperationType("income")}
               className={
                 isIncome
-                  ? "app-button"
-                  : "h-[36px] px-[14px] rounded-[10px] border border-[var(--border)] text-[14px] font-medium text-[var(--text-secondary)]"
+                  ? "h-[34px] px-4 rounded-[8px] bg-[var(--card)] border border-[var(--border)] text-[14px] font-medium text-[var(--text-primary)]"
+                  : "h-[34px] px-4 rounded-[8px] text-[14px] font-medium text-[var(--text-secondary)]"
               }
             >
               Пополнение
@@ -64,8 +64,8 @@ export default function ContributionForm({
               onClick={() => setOperationType("expense")}
               className={
                 isExpense
-                  ? "app-button"
-                  : "h-[36px] px-[14px] rounded-[10px] border border-[var(--border)] text-[14px] font-medium text-[var(--text-secondary)]"
+                  ? "h-[34px] px-4 rounded-[8px] bg-[var(--card)] border border-[var(--border)] text-[14px] font-medium text-[var(--text-primary)]"
+                  : "h-[34px] px-4 rounded-[8px] text-[14px] font-medium text-[var(--text-secondary)]"
               }
             >
               Вывод
