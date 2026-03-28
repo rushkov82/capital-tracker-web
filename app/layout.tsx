@@ -1,26 +1,23 @@
+import type { Metadata } from "next";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
-import type { Viewport } from "next";
+import ToastViewport from "@/components/ui/ToastViewport";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Capital Tracker",
-  description: "Система капитала",
-};
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
+  description: "Инструмент стратегического планирования и контроля капитала",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="ru">
       <body>
         <AppShell>{children}</AppShell>
+        <ToastViewport />
       </body>
     </html>
   );

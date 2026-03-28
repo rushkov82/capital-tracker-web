@@ -11,10 +11,7 @@ export function buildFactDistribution(
   const grouped = new Map<string, number>();
 
   for (const operation of operations) {
-    const isAdjustment = operation.type === "adjustment";
-    const category = isAdjustment
-      ? "Корректировка"
-      : operation.asset_category || "Без категории";
+    const category = operation.asset_category || "Без категории";
 
     const signedAmount =
       operation.type === "expense" ? -operation.amount : operation.amount;

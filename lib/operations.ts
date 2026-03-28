@@ -36,6 +36,73 @@ async function getCurrentUser() {
   return user;
 }
 
+function getCategoryBalance(
+  operations: Operation[],
+  category: string,
+  excludeId?: string
+): number {
+  return operations
+    .filter((op) => op.asset_category === category && op.id !== excludeId)
+    .reduce((sum, op) => {
+      if (op.type === "expense") return sum - op.amount;
+      return sum + op.amount;
+    }, 0);
+}
+
+function validateOperation(
+  operations: Operation[],
+  newOp: {
+    amount: number;
+    type: "income" | "expense" | "adjustment";
+    asset_category: string | null;
+  },
+  excludeId?: string
+) {
+  if (newOp.type === "income") return;
+  if (!newOp.asset_category) return;
+
+  const currentBalance = getCategoryBalance(
+    operations,
+    newOp.asset_category,
+    excludeId
+  );
+
+  const resultBalance = currentBalance + newOp.amount;
+
+  if (resultBalance < 0) {
+    throw new Error("Недостаточно средств в категории для этой операции");
+  }
+}
+
+async function getAllOperationsForValidation(): Promise<Operation[]> {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return readLocalOperations();
+  }
+
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("operations")
+    .select("id, amount, comment, date, category, created_at, type")
+    .eq("user_id", user.id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []).map((item) => ({
+    id: item.id,
+    amount: Number(item.amount),
+    comment: item.comment,
+    operation_date: item.date,
+    asset_category: item.category,
+    created_at: item.created_at,
+    type: item.type as "income" | "expense" | "adjustment",
+  }));
+}
+
 export async function fetchOperations(): Promise<Operation[]> {
   const user = await getCurrentUser();
 
@@ -63,10 +130,7 @@ export async function fetchOperations(): Promise<Operation[]> {
     operation_date: item.date,
     asset_category: item.category,
     created_at: item.created_at,
-    type: (item.type ?? "income") as
-      | "income"
-      | "expense"
-      | "adjustment",
+    type: item.type as "income" | "expense" | "adjustment",
   }));
 }
 
@@ -78,6 +142,9 @@ export async function createOperation(data: {
   type: "income" | "expense" | "adjustment";
 }) {
   const user = await getCurrentUser();
+  const allOperations = await getAllOperationsForValidation();
+
+  validateOperation(allOperations, data);
 
   if (!user) {
     const current = readLocalOperations();
@@ -125,6 +192,25 @@ export async function updateOperation(
   }
 ) {
   const user = await getCurrentUser();
+  const allOperations = await getAllOperationsForValidation();
+
+  const currentOperation = allOperations.find((op) => op.id === id);
+  if (!currentOperation) {
+    throw new Error("Операция не найдена");
+  }
+
+  const nextOperation = {
+    amount: data.amount,
+    comment: data.comment,
+    operation_date: data.operation_date ?? currentOperation.operation_date,
+    asset_category:
+      data.asset_category !== undefined
+        ? data.asset_category
+        : currentOperation.asset_category,
+    type: data.type ?? currentOperation.type,
+  };
+
+  validateOperation(allOperations, nextOperation, id);
 
   if (!user) {
     const current = readLocalOperations();
@@ -137,7 +223,10 @@ export async function updateOperation(
         amount: data.amount,
         comment: data.comment || null,
         operation_date: data.operation_date ?? item.operation_date,
-        asset_category: data.asset_category ?? item.asset_category,
+        asset_category:
+          data.asset_category !== undefined
+            ? data.asset_category
+            : item.asset_category,
         type: data.type ?? item.type,
       };
     });
@@ -160,8 +249,7 @@ export async function updateOperation(
   };
 
   if (data.operation_date) payload.date = data.operation_date;
-  if (data.asset_category !== undefined)
-    payload.category = data.asset_category;
+  if (data.asset_category !== undefined) payload.category = data.asset_category;
   if (data.type) payload.type = data.type;
 
   const { error } = await supabase

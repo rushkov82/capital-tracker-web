@@ -9,6 +9,7 @@ import {
   fetchOperations,
   type Operation,
 } from "@/lib/operations";
+import { showToast } from "@/lib/toast";
 import ContributionForm from "@/components/ContributionForm";
 import AdjustmentForm from "@/components/AdjustmentForm";
 import FactDistribution from "@/components/FactDistribution";
@@ -17,9 +18,7 @@ import { formatNumber, formatPercent } from "@/lib/calculations";
 
 export default function CapitalPage() {
   const [operations, setOperations] = useState<Operation[]>([]);
-  const [errorText, setErrorText] = useState("");
 
-  // пополнение / вывод
   const [actualContribution, setActualContribution] = useState("");
   const [contributionComment, setContributionComment] = useState("");
   const [contributionDate, setContributionDate] = useState(todayString());
@@ -30,7 +29,6 @@ export default function CapitalPage() {
     "income"
   );
 
-  // корректировка
   const [adjustmentAmount, setAdjustmentAmount] = useState("");
   const [adjustmentCategory, setAdjustmentCategory] = useState<string>(
     ASSET_CATEGORIES[0]
@@ -47,19 +45,24 @@ export default function CapitalPage() {
       const data = await fetchOperations();
       setOperations(data);
     } catch (error) {
-      setErrorText(
-        error instanceof Error ? error.message : "Ошибка загрузки операций"
-      );
+      showToast({
+        type: "error",
+        title: "Не удалось загрузить данные",
+        description:
+          error instanceof Error ? error.message : "Ошибка загрузки операций",
+      });
     }
   }
 
   async function saveContribution() {
-    setErrorText("");
-
     const amount = Number(actualContribution);
 
     if (!amount || Number.isNaN(amount) || amount <= 0) {
-      setErrorText("Введите корректную сумму");
+      showToast({
+        type: "error",
+        title: "Не удалось сохранить",
+        description: "Введите корректную сумму",
+      });
       return;
     }
 
@@ -80,19 +83,24 @@ export default function CapitalPage() {
 
       await loadOperations();
     } catch (error) {
-      setErrorText(
-        error instanceof Error ? error.message : "Ошибка сохранения"
-      );
+      showToast({
+        type: "error",
+        title: "Не удалось сохранить",
+        description:
+          error instanceof Error ? error.message : "Ошибка сохранения операции",
+      });
     }
   }
 
   async function saveAdjustment() {
-    setErrorText("");
-
     const amount = Number(adjustmentAmount);
 
     if (!amount || Number.isNaN(amount)) {
-      setErrorText("Введите корректную сумму");
+      showToast({
+        type: "error",
+        title: "Не удалось сохранить корректировку",
+        description: "Введите корректную сумму",
+      });
       return;
     }
 
@@ -112,9 +120,12 @@ export default function CapitalPage() {
 
       await loadOperations();
     } catch (error) {
-      setErrorText(
-        error instanceof Error ? error.message : "Ошибка сохранения"
-      );
+      showToast({
+        type: "error",
+        title: "Не удалось сохранить корректировку",
+        description:
+          error instanceof Error ? error.message : "Ошибка сохранения",
+      });
     }
   }
 
@@ -177,8 +188,6 @@ export default function CapitalPage() {
         </section>
       </div>
 
-      {errorText && <div className="app-error-box">{errorText}</div>}
-
       <ContributionForm
         cardClass="app-card"
         commonInputClass="app-input"
@@ -219,6 +228,7 @@ export default function CapitalPage() {
         <OperationsList
           cardClass=""
           operations={recentMoneyOperations}
+          categories={[...ASSET_CATEGORIES]}
           formatNumber={formatNumber}
           onReload={loadOperations}
         />
@@ -241,6 +251,7 @@ export default function CapitalPage() {
         <OperationsList
           cardClass=""
           operations={recentAdjustments}
+          categories={[...ASSET_CATEGORIES]}
           formatNumber={formatNumber}
           onReload={loadOperations}
         />

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { deleteOperation, updateOperation } from "@/lib/operations";
+import { showToast } from "@/lib/toast";
 
 type Operation = {
   id: string;
@@ -16,49 +17,80 @@ type Operation = {
 type OperationsListProps = {
   cardClass: string;
   operations: Operation[];
+  categories: string[];
   formatNumber: (value: number) => string;
-  onReload?: () => void;
+  onReload?: () => Promise<void> | void;
 };
 
 export default function OperationsList({
   cardClass,
   operations,
+  categories,
   formatNumber,
   onReload,
 }: OperationsListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingAmount, setEditingAmount] = useState("");
   const [editingComment, setEditingComment] = useState("");
+  const [editingCategory, setEditingCategory] = useState("");
 
   function startEdit(op: Operation) {
     setEditingId(op.id);
     setEditingAmount(String(op.amount));
     setEditingComment(op.comment || "");
+    setEditingCategory(op.asset_category || categories[0] || "");
   }
 
   function cancelEdit() {
     setEditingId(null);
     setEditingAmount("");
     setEditingComment("");
+    setEditingCategory("");
   }
 
   async function handleSave(id: string) {
     const amount = Number(editingAmount);
 
-    if (!amount || Number.isNaN(amount)) return;
+    if (!amount || Number.isNaN(amount)) {
+      showToast({
+        type: "error",
+        title: "Не удалось сохранить",
+        description: "Введите корректную сумму",
+      });
+      return;
+    }
 
-    await updateOperation(id, {
-      amount,
-      comment: editingComment,
-    });
+    try {
+      await updateOperation(id, {
+        amount,
+        comment: editingComment,
+        asset_category: editingCategory,
+      });
 
-    cancelEdit();
-    await onReload?.();
+      cancelEdit();
+      await onReload?.();
+    } catch (error) {
+      showToast({
+        type: "error",
+        title: "Не удалось сохранить",
+        description:
+          error instanceof Error ? error.message : "Ошибка сохранения операции",
+      });
+    }
   }
 
   async function handleDelete(id: string) {
-    await deleteOperation(id);
-    await onReload?.();
+    try {
+      await deleteOperation(id);
+      await onReload?.();
+    } catch (error) {
+      showToast({
+        type: "error",
+        title: "Не удалось удалить",
+        description:
+          error instanceof Error ? error.message : "Ошибка удаления операции",
+      });
+    }
   }
 
   return (
@@ -74,8 +106,7 @@ export default function OperationsList({
             const isExpense = op.type === "expense";
             const isAdjustment = op.type === "adjustment";
 
-            const signed =
-              op.type === "expense" ? -op.amount : op.amount;
+            const signed = op.type === "expense" ? -op.amount : op.amount;
 
             const color =
               signed < 0
@@ -114,23 +145,38 @@ export default function OperationsList({
                   )}
                 </div>
 
-                <div className="app-text mt-1">
-                  {isAdjustment
-                    ? "Корректировка"
-                    : op.asset_category || "Без категории"}
-                </div>
+                {isEditing ? (
+                  <div className="mt-2">
+                    <select
+                      className="app-select"
+                      value={editingCategory}
+                      onChange={(e) => setEditingCategory(e.target.value)}
+                    >
+                      {categories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="app-text mt-1">
+                    {isAdjustment
+                      ? op.asset_category || "Корректировка"
+                      : op.asset_category || "Без категории"}
+                  </div>
+                )}
 
                 {isEditing ? (
                   <input
                     className="app-input mt-2"
                     value={editingComment}
                     onChange={(e) => setEditingComment(e.target.value)}
+                    placeholder="Комментарий"
                   />
                 ) : (
                   <div className="app-text-small mt-0.5">
-                    {op.comment?.trim()
-                      ? op.comment
-                      : "Без комментария"}
+                    {op.comment?.trim() ? op.comment : "Без комментария"}
                   </div>
                 )}
 
