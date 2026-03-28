@@ -1,8 +1,12 @@
 type AdjustmentFormProps = {
   cardClass: string;
   commonInputClass: string;
+  selectClass: string;
+  categories: string[];
   amount: string;
   setAmount: (value: string) => void;
+  category: string;
+  setCategory: (value: string) => void;
   date: string;
   setDate: (value: string) => void;
   comment: string;
@@ -13,8 +17,12 @@ type AdjustmentFormProps = {
 export default function AdjustmentForm({
   cardClass,
   commonInputClass,
+  selectClass,
+  categories,
   amount,
   setAmount,
+  category,
+  setCategory,
   date,
   setDate,
   comment,
@@ -26,7 +34,7 @@ export default function AdjustmentForm({
       <h2 className="app-card-title mb-2">Корректировка капитала</h2>
 
       <div className="app-text-small mb-3">
-        Используется для учёта изменения стоимости активов
+        Учёт изменения стоимости активов
       </div>
 
       <div className="space-y-3">
@@ -37,6 +45,20 @@ export default function AdjustmentForm({
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Например: -1500 или 2000"
           />
+        </FormRow>
+
+        <FormRow label="Категория">
+          <select
+            className={selectClass}
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
         </FormRow>
 
         <FormRow label="Дата">
@@ -53,7 +75,7 @@ export default function AdjustmentForm({
             className={commonInputClass}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Например: просадка рынка"
+            placeholder="Например: просадка по акциям"
           />
         </FormRow>
 

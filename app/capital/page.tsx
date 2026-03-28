@@ -19,7 +19,7 @@ export default function CapitalPage() {
   const [operations, setOperations] = useState<Operation[]>([]);
   const [errorText, setErrorText] = useState("");
 
-  // пополнение/вывод
+  // пополнение / вывод
   const [actualContribution, setActualContribution] = useState("");
   const [contributionComment, setContributionComment] = useState("");
   const [contributionDate, setContributionDate] = useState(todayString());
@@ -32,6 +32,9 @@ export default function CapitalPage() {
 
   // корректировка
   const [adjustmentAmount, setAdjustmentAmount] = useState("");
+  const [adjustmentCategory, setAdjustmentCategory] = useState<string>(
+    ASSET_CATEGORIES[0]
+  );
   const [adjustmentComment, setAdjustmentComment] = useState("");
   const [adjustmentDate, setAdjustmentDate] = useState(todayString());
 
@@ -98,13 +101,14 @@ export default function CapitalPage() {
         amount,
         comment: adjustmentComment,
         operation_date: adjustmentDate,
-        asset_category: null,
+        asset_category: adjustmentCategory,
         type: "adjustment",
       });
 
       setAdjustmentAmount("");
       setAdjustmentComment("");
       setAdjustmentDate(todayString());
+      setAdjustmentCategory(ASSET_CATEGORIES[0]);
 
       await loadOperations();
     } catch (error) {
@@ -122,15 +126,35 @@ export default function CapitalPage() {
     return getTotalFactAmount(groupedFact);
   }, [groupedFact]);
 
-  const recentOperations = useMemo(() => {
-    return [...operations]
+  const moneyOperations = useMemo(() => {
+    return operations.filter(
+      (operation) => operation.type === "income" || operation.type === "expense"
+    );
+  }, [operations]);
+
+  const adjustmentOperations = useMemo(() => {
+    return operations.filter((operation) => operation.type === "adjustment");
+  }, [operations]);
+
+  const recentMoneyOperations = useMemo(() => {
+    return [...moneyOperations]
       .sort((a, b) => {
         const dateCompare = b.operation_date.localeCompare(a.operation_date);
         if (dateCompare !== 0) return dateCompare;
         return b.created_at.localeCompare(a.created_at);
       })
       .slice(0, 3);
-  }, [operations]);
+  }, [moneyOperations]);
+
+  const recentAdjustments = useMemo(() => {
+    return [...adjustmentOperations]
+      .sort((a, b) => {
+        const dateCompare = b.operation_date.localeCompare(a.operation_date);
+        if (dateCompare !== 0) return dateCompare;
+        return b.created_at.localeCompare(a.created_at);
+      })
+      .slice(0, 3);
+  }, [adjustmentOperations]);
 
   return (
     <div className="space-y-4">
@@ -176,8 +200,12 @@ export default function CapitalPage() {
       <AdjustmentForm
         cardClass="app-card"
         commonInputClass="app-input"
+        selectClass="app-select"
+        categories={[...ASSET_CATEGORIES]}
         amount={adjustmentAmount}
         setAmount={setAdjustmentAmount}
+        category={adjustmentCategory}
+        setCategory={setAdjustmentCategory}
         date={adjustmentDate}
         setDate={setAdjustmentDate}
         comment={adjustmentComment}
@@ -186,11 +214,11 @@ export default function CapitalPage() {
       />
 
       <section className="app-card">
-        <h2 className="app-card-title mb-4">История взносов</h2>
+        <h2 className="app-card-title mb-4">История пополнений и выводов</h2>
 
         <OperationsList
           cardClass=""
-          operations={recentOperations}
+          operations={recentMoneyOperations}
           formatNumber={formatNumber}
           onReload={loadOperations}
         />
@@ -202,6 +230,20 @@ export default function CapitalPage() {
             </Link>
           </div>
         </div>
+      </section>
+
+      <section className="app-card">
+        <h2 className="app-card-title mb-2">Корректировка стоимости</h2>
+        <div className="app-text-small mb-4">
+          История изменений стоимости активов
+        </div>
+
+        <OperationsList
+          cardClass=""
+          operations={recentAdjustments}
+          formatNumber={formatNumber}
+          onReload={loadOperations}
+        />
       </section>
 
       <FactDistribution
