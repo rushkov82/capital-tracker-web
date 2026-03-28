@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   calculateCapital,
   formatNumber,
@@ -11,8 +11,8 @@ import PortfolioStructure from "@/components/PortfolioStructure";
 import ResultBlock from "@/components/ResultBlock";
 import {
   DEFAULT_PLAN_SETTINGS,
-  loadPlanSettings,
-  savePlanSettings,
+  fetchPlanSettings,
+  upsertPlanSettings,
 } from "@/lib/plan";
 
 export default function StrategyPage() {
@@ -72,52 +72,85 @@ export default function StrategyPage() {
   const [realResult, setRealResult] = useState("-");
   const [errorText, setErrorText] = useState("");
 
+  const hasLoadedRef = useRef(false);
+
   useEffect(() => {
-    const saved = loadPlanSettings();
+    let active = true;
 
-    setInitialCapital(saved.initialCapital);
-    setMonthlyContribution(saved.monthlyContribution);
-    setInflation(saved.inflation);
-    setContributionGrowth(saved.contributionGrowth);
-    setYears(saved.years);
+    async function load() {
+      try {
+        const saved = await fetchPlanSettings();
+        if (!active) return;
 
-    setStocksBondsShare(saved.stocksBondsShare);
-    setStocksBondsReturn(saved.stocksBondsReturn);
+        setInitialCapital(saved.initialCapital);
+        setMonthlyContribution(saved.monthlyContribution);
+        setInflation(saved.inflation);
+        setContributionGrowth(saved.contributionGrowth);
+        setYears(saved.years);
 
-    setRubCashShare(saved.rubCashShare);
-    setRubCashReturn(saved.rubCashReturn);
+        setStocksBondsShare(saved.stocksBondsShare);
+        setStocksBondsReturn(saved.stocksBondsReturn);
 
-    setMetalsShare(saved.metalsShare);
-    setMetalsReturn(saved.metalsReturn);
+        setRubCashShare(saved.rubCashShare);
+        setRubCashReturn(saved.rubCashReturn);
 
-    setRealEstateShare(saved.realEstateShare);
-    setRealEstateReturn(saved.realEstateReturn);
+        setMetalsShare(saved.metalsShare);
+        setMetalsReturn(saved.metalsReturn);
 
-    setCurrencyShare(saved.currencyShare);
-    setCurrencyReturn(saved.currencyReturn);
+        setRealEstateShare(saved.realEstateShare);
+        setRealEstateReturn(saved.realEstateReturn);
 
-    setOtherReturn(saved.otherReturn);
+        setCurrencyShare(saved.currencyShare);
+        setCurrencyReturn(saved.currencyReturn);
+
+        setOtherReturn(saved.otherReturn);
+
+        hasLoadedRef.current = true;
+      } catch (error) {
+        if (!active) return;
+        setErrorText(
+          error instanceof Error ? error.message : "Ошибка загрузки стратегии"
+        );
+        hasLoadedRef.current = true;
+      }
+    }
+
+    void load();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
-    savePlanSettings({
-      initialCapital,
-      monthlyContribution,
-      inflation,
-      contributionGrowth,
-      years,
-      stocksBondsShare,
-      stocksBondsReturn,
-      rubCashShare,
-      rubCashReturn,
-      metalsShare,
-      metalsReturn,
-      realEstateShare,
-      realEstateReturn,
-      currencyShare,
-      currencyReturn,
-      otherReturn,
-    });
+    if (!hasLoadedRef.current) return;
+
+    const timeout = window.setTimeout(() => {
+      void upsertPlanSettings({
+        initialCapital,
+        monthlyContribution,
+        inflation,
+        contributionGrowth,
+        years,
+        stocksBondsShare,
+        stocksBondsReturn,
+        rubCashShare,
+        rubCashReturn,
+        metalsShare,
+        metalsReturn,
+        realEstateShare,
+        realEstateReturn,
+        currencyShare,
+        currencyReturn,
+        otherReturn,
+      }).catch((error) => {
+        setErrorText(
+          error instanceof Error ? error.message : "Ошибка сохранения стратегии"
+        );
+      });
+    }, 400);
+
+    return () => window.clearTimeout(timeout);
   }, [
     initialCapital,
     monthlyContribution,
@@ -157,9 +190,7 @@ export default function StrategyPage() {
     return 100 - totalManualShare;
   }, [totalManualShare]);
 
-  function calculate() {
-    setErrorText("");
-
+  function calculateAndSetResult() {
     const result = calculateCapital({
       initialCapital,
       monthlyContribution,
@@ -180,6 +211,9 @@ export default function StrategyPage() {
     });
 
     if (!result.success) {
+      setPortfolioResult("-");
+      setNominalResult("-");
+      setRealResult("-");
       setErrorText(result.error);
       return;
     }
@@ -187,6 +221,35 @@ export default function StrategyPage() {
     setPortfolioResult(`${formatPercent(result.portfolioRatePercent)} %`);
     setNominalResult(`${formatNumber(result.nominalCapital)} ₽`);
     setRealResult(`${formatNumber(result.realCapital)} ₽`);
+  }
+
+  useEffect(() => {
+    if (!hasLoadedRef.current) return;
+
+    setErrorText("");
+    calculateAndSetResult();
+  }, [
+    initialCapital,
+    monthlyContribution,
+    inflation,
+    contributionGrowth,
+    years,
+    stocksBondsShare,
+    stocksBondsReturn,
+    rubCashShare,
+    rubCashReturn,
+    metalsShare,
+    metalsReturn,
+    realEstateShare,
+    realEstateReturn,
+    currencyShare,
+    currencyReturn,
+    otherReturn,
+  ]);
+
+  function handleManualCalculate() {
+    setErrorText("");
+    calculateAndSetResult();
   }
 
   return (
@@ -197,6 +260,8 @@ export default function StrategyPage() {
           Сценарий роста капитала, структура и ориентир по результату
         </p>
       </div>
+
+      {errorText && <div className="app-error-box">{errorText}</div>}
 
       <div className="grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-[1.05fr_1.15fr]">
         <MainParameters
@@ -246,7 +311,7 @@ export default function StrategyPage() {
       </div>
 
       <div className="flex">
-        <button onClick={calculate} className="app-button">
+        <button onClick={handleManualCalculate} className="app-button">
           Рассчитать
         </button>
       </div>
@@ -255,7 +320,7 @@ export default function StrategyPage() {
         cardClass="app-card"
         nominalResult={nominalResult}
         realResult={realResult}
-        errorText={errorText}
+        errorText=""
       />
     </div>
   );
