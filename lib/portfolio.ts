@@ -1,4 +1,3 @@
-import { ASSET_CATEGORIES } from "@/lib/constants";
 import type { Operation } from "@/lib/operations";
 
 export type FactDistributionItem = {
@@ -9,23 +8,26 @@ export type FactDistributionItem = {
 export function buildFactDistribution(
   operations: Operation[]
 ): FactDistributionItem[] {
-  const base: Record<string, number> = Object.fromEntries(
-    ASSET_CATEGORIES.map((category) => [category, 0])
-  );
+  const grouped = new Map<string, number>();
 
-  for (const op of operations) {
-    const category =
-      op.asset_category && ASSET_CATEGORIES.includes(op.asset_category as any)
-        ? op.asset_category
-        : "Прочее";
+  for (const operation of operations) {
+    const isAdjustment = operation.type === "adjustment";
+    const category = isAdjustment
+      ? "Корректировка"
+      : operation.asset_category || "Без категории";
 
-    base[category] += Number(op.amount) || 0;
+    const signedAmount =
+      operation.type === "expense" ? -operation.amount : operation.amount;
+
+    grouped.set(category, (grouped.get(category) || 0) + signedAmount);
   }
 
-  return ASSET_CATEGORIES.map((category) => ({
-    category,
-    amount: base[category] || 0,
-  }));
+  return Array.from(grouped.entries())
+    .map(([category, amount]) => ({
+      category,
+      amount,
+    }))
+    .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
 }
 
 export function getTotalFactAmount(items: FactDistributionItem[]) {

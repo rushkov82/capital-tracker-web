@@ -10,6 +10,7 @@ import {
   type Operation,
 } from "@/lib/operations";
 import ContributionForm from "@/components/ContributionForm";
+import AdjustmentForm from "@/components/AdjustmentForm";
 import FactDistribution from "@/components/FactDistribution";
 import OperationsList from "@/components/OperationsList";
 import { formatNumber, formatPercent } from "@/lib/calculations";
@@ -18,6 +19,7 @@ export default function CapitalPage() {
   const [operations, setOperations] = useState<Operation[]>([]);
   const [errorText, setErrorText] = useState("");
 
+  // пополнение/вывод
   const [actualContribution, setActualContribution] = useState("");
   const [contributionComment, setContributionComment] = useState("");
   const [contributionDate, setContributionDate] = useState(todayString());
@@ -27,6 +29,11 @@ export default function CapitalPage() {
   const [operationType, setOperationType] = useState<"income" | "expense">(
     "income"
   );
+
+  // корректировка
+  const [adjustmentAmount, setAdjustmentAmount] = useState("");
+  const [adjustmentComment, setAdjustmentComment] = useState("");
+  const [adjustmentDate, setAdjustmentDate] = useState(todayString());
 
   useEffect(() => {
     void loadOperations();
@@ -67,6 +74,37 @@ export default function CapitalPage() {
       setContributionDate(todayString());
       setContributionCategory(ASSET_CATEGORIES[0]);
       setOperationType("income");
+
+      await loadOperations();
+    } catch (error) {
+      setErrorText(
+        error instanceof Error ? error.message : "Ошибка сохранения"
+      );
+    }
+  }
+
+  async function saveAdjustment() {
+    setErrorText("");
+
+    const amount = Number(adjustmentAmount);
+
+    if (!amount || Number.isNaN(amount)) {
+      setErrorText("Введите корректную сумму");
+      return;
+    }
+
+    try {
+      await createOperation({
+        amount,
+        comment: adjustmentComment,
+        operation_date: adjustmentDate,
+        asset_category: null,
+        type: "adjustment",
+      });
+
+      setAdjustmentAmount("");
+      setAdjustmentComment("");
+      setAdjustmentDate(todayString());
 
       await loadOperations();
     } catch (error) {
@@ -133,6 +171,18 @@ export default function CapitalPage() {
         operationType={operationType}
         setOperationType={setOperationType}
         onSave={saveContribution}
+      />
+
+      <AdjustmentForm
+        cardClass="app-card"
+        commonInputClass="app-input"
+        amount={adjustmentAmount}
+        setAmount={setAdjustmentAmount}
+        date={adjustmentDate}
+        setDate={setAdjustmentDate}
+        comment={adjustmentComment}
+        setComment={setAdjustmentComment}
+        onSave={saveAdjustment}
       />
 
       <section className="app-card">

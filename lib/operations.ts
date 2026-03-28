@@ -7,7 +7,7 @@ export type Operation = {
   operation_date: string;
   asset_category: string | null;
   created_at: string;
-  type: "income" | "expense";
+  type: "income" | "expense" | "adjustment";
 };
 
 const STORAGE_KEY = "capital_operations";
@@ -63,7 +63,10 @@ export async function fetchOperations(): Promise<Operation[]> {
     operation_date: item.date,
     asset_category: item.category,
     created_at: item.created_at,
-    type: (item.type ?? "income") as "income" | "expense",
+    type: (item.type ?? "income") as
+      | "income"
+      | "expense"
+      | "adjustment",
   }));
 }
 
@@ -71,8 +74,8 @@ export async function createOperation(data: {
   amount: number;
   comment: string;
   operation_date: string;
-  asset_category: string;
-  type: "income" | "expense";
+  asset_category: string | null;
+  type: "income" | "expense" | "adjustment";
 }) {
   const user = await getCurrentUser();
 
@@ -117,8 +120,8 @@ export async function updateOperation(
     amount: number;
     comment: string;
     operation_date?: string;
-    asset_category?: string;
-    type?: "income" | "expense";
+    asset_category?: string | null;
+    type?: "income" | "expense" | "adjustment";
   }
 ) {
   const user = await getCurrentUser();
@@ -149,15 +152,16 @@ export async function updateOperation(
     amount: number;
     comment: string | null;
     date?: string;
-    category?: string;
-    type?: "income" | "expense";
+    category?: string | null;
+    type?: "income" | "expense" | "adjustment";
   } = {
     amount: data.amount,
     comment: data.comment || null,
   };
 
   if (data.operation_date) payload.date = data.operation_date;
-  if (data.asset_category) payload.category = data.asset_category;
+  if (data.asset_category !== undefined)
+    payload.category = data.asset_category;
   if (data.type) payload.type = data.type;
 
   const { error } = await supabase

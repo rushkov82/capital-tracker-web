@@ -10,7 +10,7 @@ type Operation = {
   operation_date: string;
   asset_category: string | null;
   created_at: string;
-  type: "income" | "expense";
+  type: "income" | "expense" | "adjustment";
 };
 
 type OperationsListProps = {
@@ -45,9 +45,7 @@ export default function OperationsList({
   async function handleSave(id: string) {
     const amount = Number(editingAmount);
 
-    if (!amount || Number.isNaN(amount) || amount <= 0) {
-      return;
-    }
+    if (!amount || Number.isNaN(amount)) return;
 
     await updateOperation(id, {
       amount,
@@ -72,14 +70,28 @@ export default function OperationsList({
           {operations.map((op, index) => {
             const isLast = index === operations.length - 1;
             const isEditing = editingId === op.id;
+
             const isExpense = op.type === "expense";
-            const amountColor = isExpense ? "#dc2626" : "#16a34a";
-            const amountPrefix = isExpense ? "−" : "+";
+            const isAdjustment = op.type === "adjustment";
+
+            const signed =
+              op.type === "expense" ? -op.amount : op.amount;
+
+            const color =
+              signed < 0
+                ? "#dc2626"
+                : isAdjustment
+                ? "#2563eb"
+                : "#16a34a";
+
+            const prefix = signed < 0 ? "−" : "+";
 
             return (
               <div
                 key={op.id}
-                className={`py-3 ${isLast ? "" : "border-b border-[var(--border)]"}`}
+                className={`py-3 ${
+                  isLast ? "" : "border-b border-[var(--border)]"
+                }`}
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="app-label">
@@ -95,15 +107,17 @@ export default function OperationsList({
                   ) : (
                     <div
                       className="app-text whitespace-nowrap font-semibold"
-                      style={{ color: amountColor }}
+                      style={{ color }}
                     >
-                      {amountPrefix} {formatNumber(op.amount)} ₽
+                      {prefix} {formatNumber(Math.abs(op.amount))} ₽
                     </div>
                   )}
                 </div>
 
                 <div className="app-text mt-1">
-                  {op.asset_category || "Без категории"}
+                  {isAdjustment
+                    ? "Корректировка"
+                    : op.asset_category || "Без категории"}
                 </div>
 
                 {isEditing ? (
@@ -111,21 +125,28 @@ export default function OperationsList({
                     className="app-input mt-2"
                     value={editingComment}
                     onChange={(e) => setEditingComment(e.target.value)}
-                    placeholder="Комментарий"
                   />
                 ) : (
                   <div className="app-text-small mt-0.5">
-                    {op.comment?.trim() ? op.comment : "Без комментария"}
+                    {op.comment?.trim()
+                      ? op.comment
+                      : "Без комментария"}
                   </div>
                 )}
 
                 <div className="mt-2 flex justify-end gap-3">
                   {isEditing ? (
                     <>
-                      <button onClick={cancelEdit} className="app-text-secondary">
+                      <button
+                        onClick={cancelEdit}
+                        className="app-text-secondary"
+                      >
                         Отмена
                       </button>
-                      <button onClick={() => handleSave(op.id)} className="app-button">
+                      <button
+                        onClick={() => handleSave(op.id)}
+                        className="app-button"
+                      >
                         Сохранить
                       </button>
                     </>
@@ -139,7 +160,7 @@ export default function OperationsList({
                       </button>
                       <button
                         onClick={() => handleDelete(op.id)}
-                        className="text-[14px] leading-[20px] text-[#dc2626]"
+                        className="text-[14px] text-[#dc2626]"
                       >
                         Удалить
                       </button>
