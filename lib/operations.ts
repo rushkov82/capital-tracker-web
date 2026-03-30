@@ -24,97 +24,58 @@ type UpdateOperationInput = {
   asset_category?: string | null;
 };
 
-const STORAGE_KEY = "capital_operations";
+async function parseResponse<T>(response: Response): Promise<T> {
+  const data = await response.json();
 
-function canUseStorage() {
-  return typeof window !== "undefined";
-}
-
-function loadOperations(): Operation[] {
-  if (!canUseStorage()) return [];
-
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return [];
-
-  try {
-    const parsed = JSON.parse(raw) as Operation[];
-    if (!Array.isArray(parsed)) return [];
-    return parsed;
-  } catch {
-    return [];
+  if (!response.ok) {
+    throw new Error(data?.error || "Ошибка запроса");
   }
-}
 
-function saveOperations(operations: Operation[]) {
-  if (!canUseStorage()) return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(operations));
+  return data;
 }
 
 export async function fetchOperations(): Promise<Operation[]> {
-  return loadOperations().sort((a, b) => {
-    const dateCompare = b.operation_date.localeCompare(a.operation_date);
-    if (dateCompare !== 0) return dateCompare;
-    return b.created_at.localeCompare(a.created_at);
+  const response = await fetch("/api/operations", {
+    method: "GET",
+    cache: "no-store",
   });
+
+  return parseResponse<Operation[]>(response);
 }
 
 export async function createOperation(
   input: CreateOperationInput
 ): Promise<Operation> {
-  const operations = loadOperations();
+  const response = await fetch("/api/operations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  });
 
-  const operation: Operation = {
-    id: crypto.randomUUID(),
-    amount: Number(input.amount),
-    comment: input.comment ?? null,
-    operation_date: input.operation_date ?? new Date().toISOString().slice(0, 10),
-    asset_category: input.asset_category ?? null,
-    created_at: new Date().toISOString(),
-    type: input.type,
-  };
-
-  const updated = [operation, ...operations];
-  saveOperations(updated);
-
-  return operation;
+  return parseResponse<Operation>(response);
 }
 
 export async function updateOperation(
   id: string,
   input: UpdateOperationInput
 ): Promise<Operation> {
-  const operations = loadOperations();
-
-  let updatedOperation: Operation | null = null;
-
-  const updated = operations.map((operation) => {
-    if (operation.id !== id) return operation;
-
-    updatedOperation = {
-      ...operation,
-      amount:
-        input.amount !== undefined ? Number(input.amount) : operation.amount,
-      comment:
-        input.comment !== undefined ? input.comment : operation.comment,
-      asset_category:
-        input.asset_category !== undefined
-          ? input.asset_category
-          : operation.asset_category,
-    };
-
-    return updatedOperation;
+  const response = await fetch(`/api/operations/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
   });
 
-  if (!updatedOperation) {
-    throw new Error("Операция не найдена");
-  }
-
-  saveOperations(updated);
-  return updatedOperation;
+  return parseResponse<Operation>(response);
 }
 
 export async function deleteOperation(id: string): Promise<void> {
-  const operations = loadOperations();
-  const updated = operations.filter((operation) => operation.id !== id);
-  saveOperations(updated);
+  const response = await fetch(`/api/operations/${id}`, {
+    method: "DELETE",
+  });
+
+  await parseResponse<{ ok: true }>(response);
 }
