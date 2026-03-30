@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+export type OperationType = "income" | "expense" | "adjustment";
 
 export type Operation = {
   id: string;
@@ -7,280 +7,113 @@ export type Operation = {
   operation_date: string;
   asset_category: string | null;
   created_at: string;
-  type: "income" | "expense" | "adjustment";
+  type: OperationType;
+};
+
+type CreateOperationInput = {
+  amount: number;
+  comment?: string | null;
+  operation_date?: string;
+  asset_category?: string | null;
+  type: OperationType;
+};
+
+type UpdateOperationInput = {
+  amount?: number;
+  comment?: string | null;
+  asset_category?: string | null;
 };
 
 const STORAGE_KEY = "capital_operations";
 
-function readLocalOperations(): Operation[] {
+function canUseStorage() {
+  return typeof window !== "undefined";
+}
+
+function loadOperations(): Operation[] {
+  if (!canUseStorage()) return [];
+
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return [];
 
   try {
-    return JSON.parse(raw) as Operation[];
+    const parsed = JSON.parse(raw) as Operation[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed;
   } catch {
     return [];
   }
 }
 
-function writeLocalOperations(items: Operation[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-}
-
-async function getCurrentUser() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  return user;
-}
-
-function getCategoryBalance(
-  operations: Operation[],
-  category: string,
-  excludeId?: string
-): number {
-  return operations
-    .filter((op) => op.asset_category === category && op.id !== excludeId)
-    .reduce((sum, op) => {
-      if (op.type === "expense") return sum - op.amount;
-      return sum + op.amount;
-    }, 0);
-}
-
-function validateOperation(
-  operations: Operation[],
-  newOp: {
-    amount: number;
-    type: "income" | "expense" | "adjustment";
-    asset_category: string | null;
-  },
-  excludeId?: string
-) {
-  if (newOp.type === "income") return;
-  if (!newOp.asset_category) return;
-
-  const currentBalance = getCategoryBalance(
-    operations,
-    newOp.asset_category,
-    excludeId
-  );
-
-  const resultBalance = currentBalance + newOp.amount;
-
-  if (resultBalance < 0) {
-    throw new Error("Недостаточно средств в категории для этой операции");
-  }
-}
-
-async function getAllOperationsForValidation(): Promise<Operation[]> {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    return readLocalOperations();
-  }
-
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from("operations")
-    .select("id, amount, comment, date, category, created_at, type")
-    .eq("user_id", user.id);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return (data ?? []).map((item) => ({
-    id: item.id,
-    amount: Number(item.amount),
-    comment: item.comment,
-    operation_date: item.date,
-    asset_category: item.category,
-    created_at: item.created_at,
-    type: item.type as "income" | "expense" | "adjustment",
-  }));
+function saveOperations(operations: Operation[]) {
+  if (!canUseStorage()) return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(operations));
 }
 
 export async function fetchOperations(): Promise<Operation[]> {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    return readLocalOperations();
-  }
-
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from("operations")
-    .select("id, amount, comment, date, category, created_at, type")
-    .eq("user_id", user.id)
-    .order("date", { ascending: false })
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return (data ?? []).map((item) => ({
-    id: item.id,
-    amount: Number(item.amount),
-    comment: item.comment,
-    operation_date: item.date,
-    asset_category: item.category,
-    created_at: item.created_at,
-    type: item.type as "income" | "expense" | "adjustment",
-  }));
+  return loadOperations().sort(
+    (a, b) =>
+      new Date(b.operation_date).getTime() - new Date(a.operation_date).getTime()
+  );
 }
 
-export async function createOperation(data: {
-  amount: number;
-  comment: string;
-  operation_date: string;
-  asset_category: string | null;
-  type: "income" | "expense" | "adjustment";
-}) {
-  const user = await getCurrentUser();
-  const allOperations = await getAllOperationsForValidation();
+export async function createOperation(
+  input: CreateOperationInput
+): Promise<Operation> {
+  const operations = loadOperations();
 
-  validateOperation(allOperations, data);
+  const operation: Operation = {
+    id: crypto.randomUUID(),
+    amount: Number(input.amount),
+    comment: input.comment ?? null,
+    operation_date: input.operation_date ?? new Date().toISOString(),
+    asset_category: input.asset_category ?? null,
+    created_at: new Date().toISOString(),
+    type: input.type,
+  };
 
-  if (!user) {
-    const current = readLocalOperations();
+  const updated = [operation, ...operations];
+  saveOperations(updated);
 
-    const newItem: Operation = {
-      id: crypto.randomUUID(),
-      amount: data.amount,
-      comment: data.comment || null,
-      operation_date: data.operation_date,
-      asset_category: data.asset_category,
-      created_at: new Date().toISOString(),
-      type: data.type,
-    };
-
-    writeLocalOperations([newItem, ...current]);
-    return;
-  }
-
-  const supabase = createClient();
-
-  const { error } = await supabase.from("operations").insert([
-    {
-      user_id: user.id,
-      amount: data.amount,
-      category: data.asset_category,
-      date: data.operation_date,
-      comment: data.comment || null,
-      type: data.type,
-    },
-  ]);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  return operation;
 }
 
 export async function updateOperation(
   id: string,
-  data: {
-    amount: number;
-    comment: string;
-    operation_date?: string;
-    asset_category?: string | null;
-    type?: "income" | "expense" | "adjustment";
-  }
-) {
-  const user = await getCurrentUser();
-  const allOperations = await getAllOperationsForValidation();
+  input: UpdateOperationInput
+): Promise<Operation> {
+  const operations = loadOperations();
 
-  const currentOperation = allOperations.find((op) => op.id === id);
-  if (!currentOperation) {
+  let updatedOperation: Operation | null = null;
+
+  const updated = operations.map((operation) => {
+    if (operation.id !== id) return operation;
+
+    updatedOperation = {
+      ...operation,
+      amount:
+        input.amount !== undefined ? Number(input.amount) : operation.amount,
+      comment:
+        input.comment !== undefined ? input.comment : operation.comment,
+      asset_category:
+        input.asset_category !== undefined
+          ? input.asset_category
+          : operation.asset_category,
+    };
+
+    return updatedOperation;
+  });
+
+  if (!updatedOperation) {
     throw new Error("Операция не найдена");
   }
 
-  const nextOperation = {
-    amount: data.amount,
-    comment: data.comment,
-    operation_date: data.operation_date ?? currentOperation.operation_date,
-    asset_category:
-      data.asset_category !== undefined
-        ? data.asset_category
-        : currentOperation.asset_category,
-    type: data.type ?? currentOperation.type,
-  };
-
-  validateOperation(allOperations, nextOperation, id);
-
-  if (!user) {
-    const current = readLocalOperations();
-
-    const updated = current.map((item) => {
-      if (item.id !== id) return item;
-
-      return {
-        ...item,
-        amount: data.amount,
-        comment: data.comment || null,
-        operation_date: data.operation_date ?? item.operation_date,
-        asset_category:
-          data.asset_category !== undefined
-            ? data.asset_category
-            : item.asset_category,
-        type: data.type ?? item.type,
-      };
-    });
-
-    writeLocalOperations(updated);
-    return;
-  }
-
-  const supabase = createClient();
-
-  const payload: {
-    amount: number;
-    comment: string | null;
-    date?: string;
-    category?: string | null;
-    type?: "income" | "expense" | "adjustment";
-  } = {
-    amount: data.amount,
-    comment: data.comment || null,
-  };
-
-  if (data.operation_date) payload.date = data.operation_date;
-  if (data.asset_category !== undefined) payload.category = data.asset_category;
-  if (data.type) payload.type = data.type;
-
-  const { error } = await supabase
-    .from("operations")
-    .update(payload)
-    .eq("id", id)
-    .eq("user_id", user.id);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  saveOperations(updated);
+  return updatedOperation;
 }
 
-export async function deleteOperation(id: string) {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    const current = readLocalOperations();
-    writeLocalOperations(current.filter((item) => item.id !== id));
-    return;
-  }
-
-  const supabase = createClient();
-
-  const { error } = await supabase
-    .from("operations")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", user.id);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+export async function deleteOperation(id: string): Promise<void> {
+  const operations = loadOperations();
+  const updated = operations.filter((operation) => operation.id !== id);
+  saveOperations(updated);
 }

@@ -5,16 +5,24 @@ export type FactDistributionItem = {
   amount: number;
 };
 
+function getCategoryByType(type: Operation["type"]) {
+  if (type === "expense") return "Расходы";
+  if (type === "adjustment") return "Корректировки";
+  return "Пополнения";
+}
+
 export function buildFactDistribution(
   operations: Operation[]
 ): FactDistributionItem[] {
   const grouped = new Map<string, number>();
 
   for (const operation of operations) {
-    const category = operation.asset_category || "Без категории";
+    const category = getCategoryByType(operation.type);
 
     const signedAmount =
-      operation.type === "expense" ? -operation.amount : operation.amount;
+      operation.type === "expense"
+        ? -operation.amount
+        : operation.amount;
 
     grouped.set(category, (grouped.get(category) || 0) + signedAmount);
   }
