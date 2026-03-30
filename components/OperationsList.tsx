@@ -1,6 +1,11 @@
 "use client";
 
-import { deleteOperation, type Operation } from "@/lib/operations";
+import { useState } from "react";
+import {
+  deleteOperation,
+  updateOperation,
+  type Operation,
+} from "@/lib/operations";
 import { showToast } from "@/lib/toast";
 
 type OperationsListProps = {
@@ -12,7 +17,7 @@ type OperationsListProps = {
 };
 
 function getTypeLabel(type: Operation["type"]) {
-  if (type === "expense") return "Расход";
+  if (type === "expense") return "Вывод";
   if (type === "adjustment") return "Корректировка";
   return "Пополнение";
 }
@@ -20,12 +25,63 @@ function getTypeLabel(type: Operation["type"]) {
 export default function OperationsList({
   cardClass,
   operations,
+  categories,
   formatNumber,
   onReload,
 }: OperationsListProps) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingAmount, setEditingAmount] = useState("");
+  const [editingComment, setEditingComment] = useState("");
+  const [editingCategory, setEditingCategory] = useState("");
+
+  function startEdit(op: Operation) {
+    setEditingId(op.id);
+    setEditingAmount(String(op.amount));
+    setEditingComment(op.comment || "");
+    setEditingCategory(op.asset_category || categories[0] || "");
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditingAmount("");
+    setEditingComment("");
+    setEditingCategory("");
+  }
+
+  async function handleSave(id: string) {
+    const amount = Number(editingAmount);
+
+    if (!amount || Number.isNaN(amount)) {
+      showToast({
+        type: "error",
+        title: "Не удалось сохранить",
+        description: "Введите корректную сумму",
+      });
+      return;
+    }
+
+    try {
+      await updateOperation(id, {
+        amount,
+        comment: editingComment,
+        asset_category: editingCategory,
+      });
+
+      cancelEdit();
+      await onReload?.();
+    } catch (error) {
+      showToast({
+        type: "error",
+        title: "Не удалось сохранить",
+        description:
+          error instanceof Error ? error.message : "Ошибка сохранения операции",
+      });
+    }
+  }
+
   async function handleDelete(id: string) {
     try {
-      deleteOperation(id);
+      await deleteOperation(id);
       await onReload?.();
     } catch (error) {
       showToast({
@@ -45,7 +101,9 @@ export default function OperationsList({
         <div className="border-t border-[var(--border)] pt-3 space-y-0">
           {operations.map((op, index) => {
             const isLast = index === operations.length - 1;
+            const isEditing = editingId === op.id;
             const isAdjustment = op.type === "adjustment";
+
             const signed = op.type === "expense" ? -op.amount : op.amount;
 
             const color =
@@ -66,30 +124,90 @@ export default function OperationsList({
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="app-label">
-                    {new Date(op.created_at).toLocaleDateString("ru-RU")}
+                    {new Date(op.operation_date).toLocaleDateString("ru-RU")}
                   </div>
 
-                  <div
-                    className="app-text whitespace-nowrap font-semibold"
-                    style={{ color }}
-                  >
-                    {prefix} {formatNumber(Math.abs(op.amount))} ₽
+                  {isEditing ? (
+                    <input
+                      className="app-input w-[120px] text-right"
+                      value={editingAmount}
+                      onChange={(e) => setEditingAmount(e.target.value)}
+                    />
+                  ) : (
+                    <div
+                      className="app-text whitespace-nowrap font-semibold"
+                      style={{ color }}
+                    >
+                      {prefix} {formatNumber(Math.abs(op.amount))} ₽
+                    </div>
+                  )}
+                </div>
+
+                {isEditing ? (
+                  <div className="mt-2">
+                    <select
+                      className="app-select"
+                      value={editingCategory}
+                      onChange={(e) => setEditingCategory(e.target.value)}
+                    >
+                      {categories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                </div>
+                ) : (
+                  <div className="app-text mt-1">
+                    {op.asset_category || getTypeLabel(op.type)}
+                  </div>
+                )}
 
-                <div className="app-text mt-1">{getTypeLabel(op.type)}</div>
-
-                <div className="app-text-small mt-0.5">
-                  {op.comment?.trim() ? op.comment : "Без комментария"}
-                </div>
+                {isEditing ? (
+                  <input
+                    className="app-input mt-2"
+                    value={editingComment}
+                    onChange={(e) => setEditingComment(e.target.value)}
+                    placeholder="Комментарий"
+                  />
+                ) : (
+                  <div className="app-text-small mt-0.5">
+                    {op.comment?.trim() ? op.comment : "Без комментария"}
+                  </div>
+                )}
 
                 <div className="mt-2 flex justify-end gap-3">
-                  <button
-                    onClick={() => handleDelete(op.id)}
-                    className="text-[14px] text-[#dc2626]"
-                  >
-                    Удалить
-                  </button>
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={cancelEdit}
+                        className="app-text-secondary"
+                      >
+                        Отмена
+                      </button>
+                      <button
+                        onClick={() => handleSave(op.id)}
+                        className="app-button"
+                      >
+                        Сохранить
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => startEdit(op)}
+                        className="app-text-secondary"
+                      >
+                        Изменить
+                      </button>
+                      <button
+                        onClick={() => handleDelete(op.id)}
+                        className="text-[14px] text-[#dc2626]"
+                      >
+                        Удалить
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             );

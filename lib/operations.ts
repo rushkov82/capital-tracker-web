@@ -51,10 +51,11 @@ function saveOperations(operations: Operation[]) {
 }
 
 export async function fetchOperations(): Promise<Operation[]> {
-  return loadOperations().sort(
-    (a, b) =>
-      new Date(b.operation_date).getTime() - new Date(a.operation_date).getTime()
-  );
+  return loadOperations().sort((a, b) => {
+    const dateCompare = b.operation_date.localeCompare(a.operation_date);
+    if (dateCompare !== 0) return dateCompare;
+    return b.created_at.localeCompare(a.created_at);
+  });
 }
 
 export async function createOperation(
@@ -66,7 +67,7 @@ export async function createOperation(
     id: crypto.randomUUID(),
     amount: Number(input.amount),
     comment: input.comment ?? null,
-    operation_date: input.operation_date ?? new Date().toISOString(),
+    operation_date: input.operation_date ?? new Date().toISOString().slice(0, 10),
     asset_category: input.asset_category ?? null,
     created_at: new Date().toISOString(),
     type: input.type,
