@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   calculateCapital,
@@ -19,11 +21,17 @@ export function useStrategy() {
   const [monthlyContribution, setMonthlyContribution] = useState(
     DEFAULT_PLAN_SETTINGS.monthlyContribution
   );
-  const [inflation, setInflation] = useState(DEFAULT_PLAN_SETTINGS.inflation);
+  const [inflation, setInflation] = useState(
+    DEFAULT_PLAN_SETTINGS.inflation
+  );
   const [contributionGrowth, setContributionGrowth] = useState(
     DEFAULT_PLAN_SETTINGS.contributionGrowth
   );
   const [years, setYears] = useState(DEFAULT_PLAN_SETTINGS.years);
+
+  const [planStartDate, setPlanStartDate] = useState(
+    DEFAULT_PLAN_SETTINGS.planStartDate
+  );
 
   const [stocksBondsShare, setStocksBondsShare] = useState(
     DEFAULT_PLAN_SETTINGS.stocksBondsShare
@@ -63,14 +71,12 @@ export function useStrategy() {
   const [otherReturn, setOtherReturn] = useState(
     DEFAULT_PLAN_SETTINGS.otherReturn
   );
-  const [planStartDate, setPlanStartDate] = useState(
-    DEFAULT_PLAN_SETTINGS.planStartDate
-  );
 
   const [portfolioResult, setPortfolioResult] = useState("-");
   const [nominalResult, setNominalResult] = useState("-");
   const [realResult, setRealResult] = useState("-");
   const [errorText, setErrorText] = useState("");
+
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   const hasLoadedRef = useRef(false);
@@ -88,6 +94,7 @@ export function useStrategy() {
         setInflation(saved.inflation);
         setContributionGrowth(saved.contributionGrowth);
         setYears(saved.years);
+        setPlanStartDate(saved.planStartDate);
 
         setStocksBondsShare(saved.stocksBondsShare);
         setStocksBondsReturn(saved.stocksBondsReturn);
@@ -105,15 +112,11 @@ export function useStrategy() {
         setCurrencyReturn(saved.currencyReturn);
 
         setOtherReturn(saved.otherReturn);
-        setPlanStartDate(saved.planStartDate);
 
         hasLoadedRef.current = true;
       } catch (error) {
         if (!active) return;
-        setErrorText(
-          error instanceof Error ? error.message : "Ошибка загрузки стратегии"
-        );
-        setSaveStatus("error");
+        setErrorText("Ошибка загрузки стратегии");
         hasLoadedRef.current = true;
       }
     }
@@ -125,7 +128,84 @@ export function useStrategy() {
     };
   }, []);
 
-  function calculateAndSetResult() {
+  useEffect(() => {
+    if (!hasLoadedRef.current) return;
+
+    setSaveStatus("saving");
+
+    const timeout = window.setTimeout(() => {
+      void upsertPlanSettings({
+        initialCapital,
+        monthlyContribution,
+        inflation,
+        contributionGrowth,
+        years,
+        planStartDate,
+        stocksBondsShare,
+        stocksBondsReturn,
+        rubCashShare,
+        rubCashReturn,
+        metalsShare,
+        metalsReturn,
+        realEstateShare,
+        realEstateReturn,
+        currencyShare,
+        currencyReturn,
+        otherReturn,
+      })
+        .then(() => {
+          setSaveStatus("saved");
+          setTimeout(() => setSaveStatus("idle"), 1500);
+        })
+        .catch(() => {
+          setSaveStatus("error");
+        });
+    }, 400);
+
+    return () => window.clearTimeout(timeout);
+  }, [
+    initialCapital,
+    monthlyContribution,
+    inflation,
+    contributionGrowth,
+    years,
+    planStartDate,
+    stocksBondsShare,
+    stocksBondsReturn,
+    rubCashShare,
+    rubCashReturn,
+    metalsShare,
+    metalsReturn,
+    realEstateShare,
+    realEstateReturn,
+    currencyShare,
+    currencyReturn,
+    otherReturn,
+  ]);
+
+  const totalManualShare = useMemo(() => {
+    return (
+      (Number(stocksBondsShare) || 0) +
+      (Number(rubCashShare) || 0) +
+      (Number(metalsShare) || 0) +
+      (Number(realEstateShare) || 0) +
+      (Number(currencyShare) || 0)
+    );
+  }, [
+    stocksBondsShare,
+    rubCashShare,
+    metalsShare,
+    realEstateShare,
+    currencyShare,
+  ]);
+
+  const otherShare = useMemo(() => {
+    return 100 - totalManualShare;
+  }, [totalManualShare]);
+
+  useEffect(() => {
+    if (!hasLoadedRef.current) return;
+
     const result = calculateCapital({
       initialCapital,
       monthlyContribution,
@@ -153,48 +233,10 @@ export function useStrategy() {
       return;
     }
 
+    setErrorText("");
     setPortfolioResult(`${formatPercent(result.portfolioRatePercent)} %`);
     setNominalResult(`${formatNumber(result.nominalCapital)} ₽`);
     setRealResult(`${formatNumber(result.realCapital)} ₽`);
-  }
-
-  useEffect(() => {
-    if (!hasLoadedRef.current) return;
-
-    setSaveStatus("saving");
-
-    const timeout = window.setTimeout(() => {
-      void upsertPlanSettings({
-        initialCapital,
-        monthlyContribution,
-        inflation,
-        contributionGrowth,
-        years,
-        stocksBondsShare,
-        stocksBondsReturn,
-        rubCashShare,
-        rubCashReturn,
-        metalsShare,
-        metalsReturn,
-        realEstateShare,
-        realEstateReturn,
-        currencyShare,
-        currencyReturn,
-        otherReturn,
-        planStartDate,
-      })
-        .then(() => {
-          setSaveStatus("saved");
-        })
-        .catch((error) => {
-          setErrorText(
-            error instanceof Error ? error.message : "Ошибка сохранения стратегии"
-          );
-          setSaveStatus("error");
-        });
-    }, 400);
-
-    return () => window.clearTimeout(timeout);
   }, [
     initialCapital,
     monthlyContribution,
@@ -212,71 +254,20 @@ export function useStrategy() {
     currencyShare,
     currencyReturn,
     otherReturn,
-    planStartDate,
   ]);
-
-  useEffect(() => {
-    if (!hasLoadedRef.current) return;
-
-    setErrorText("");
-    calculateAndSetResult();
-  }, [
-    initialCapital,
-    monthlyContribution,
-    inflation,
-    contributionGrowth,
-    years,
-    stocksBondsShare,
-    stocksBondsReturn,
-    rubCashShare,
-    rubCashReturn,
-    metalsShare,
-    metalsReturn,
-    realEstateShare,
-    realEstateReturn,
-    currencyShare,
-    currencyReturn,
-    otherReturn,
-    planStartDate,
-  ]);
-
-  const totalManualShare = useMemo(() => {
-    return (
-      (Number(stocksBondsShare) || 0) +
-      (Number(rubCashShare) || 0) +
-      (Number(metalsShare) || 0) +
-      (Number(realEstateShare) || 0) +
-      (Number(currencyShare) || 0)
-    );
-  }, [
-    stocksBondsShare,
-    rubCashShare,
-    metalsShare,
-    realEstateShare,
-    currencyShare,
-  ]);
-
-  const otherShare = useMemo(() => {
-    return 100 - totalManualShare;
-  }, [totalManualShare]);
-
-  function handleManualCalculate() {
-    setErrorText("");
-    calculateAndSetResult();
-  }
 
   function getSaveStatusText() {
-    if (saveStatus === "saving") return "Сохраняется...";
+    if (saveStatus === "saving") return "Сохраняем...";
     if (saveStatus === "saved") return "Сохранено";
-    if (saveStatus === "error") return "Ошибка сохранения";
+    if (saveStatus === "error") return "Ошибка";
     return "";
   }
 
   function getSaveStatusColor() {
-    if (saveStatus === "saving") return "#94a3b8";
+    if (saveStatus === "saving") return "#9ca3af";
     if (saveStatus === "saved") return "#16a34a";
     if (saveStatus === "error") return "#dc2626";
-    return "transparent";
+    return "#9ca3af";
   }
 
   return {
@@ -290,6 +281,8 @@ export function useStrategy() {
     setContributionGrowth,
     years,
     setYears,
+    planStartDate,
+    setPlanStartDate,
 
     stocksBondsShare,
     setStocksBondsShare,
@@ -316,19 +309,18 @@ export function useStrategy() {
     currencyReturn,
     setCurrencyReturn,
 
+    otherShare,
     otherReturn,
     setOtherReturn,
-    planStartDate,
-    setPlanStartDate,
+
+    totalManualShare,
 
     portfolioResult,
     nominalResult,
     realResult,
     errorText,
+
     saveStatus,
-    totalManualShare,
-    otherShare,
-    handleManualCalculate,
     getSaveStatusText,
     getSaveStatusColor,
   };

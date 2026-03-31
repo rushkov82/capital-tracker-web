@@ -107,55 +107,16 @@ export default function StrategyPage() {
         <div className="app-card-title mb-4">Способ распределения капитала</div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <button
-            onClick={() => setMode("cash")}
-            className="rounded-[14px] border px-4 py-3 text-left"
-            style={{
-              borderColor: mode === "cash" ? "var(--accent)" : "var(--border)",
-              background:
-                mode === "cash" ? "rgba(59,130,246,0.08)" : "transparent",
-            }}
-          >
-            <div className="font-medium">Только Cash</div>
-            <div className="app-text-small mt-1">
-              Простой режим без сложной структуры
-            </div>
+          <button onClick={() => setMode("cash")} className="app-button">
+            Только Cash
           </button>
 
-          <button
-            onClick={() => setMode("balanced")}
-            className="rounded-[14px] border px-4 py-3 text-left"
-            style={{
-              borderColor:
-                mode === "balanced" ? "var(--accent)" : "var(--border)",
-              background:
-                mode === "balanced"
-                  ? "rgba(59,130,246,0.08)"
-                  : "transparent",
-            }}
-          >
-            <div className="font-medium">Сбалансированный</div>
-            <div className="app-text-small mt-1">
-              Cash, акции и металлы в готовой пропорции
-            </div>
+          <button onClick={() => setMode("balanced")} className="app-button">
+            Сбалансированный
           </button>
 
-          <button
-            onClick={() => setMode("manual")}
-            className="rounded-[14px] border px-4 py-3 text-left"
-            style={{
-              borderColor:
-                mode === "manual" ? "var(--accent)" : "var(--border)",
-              background:
-                mode === "manual"
-                  ? "rgba(59,130,246,0.08)"
-                  : "transparent",
-            }}
-          >
-            <div className="font-medium">Настроить самому</div>
-            <div className="app-text-small mt-1">
-              Ручная настройка структуры и доходности
-            </div>
+          <button onClick={() => setMode("manual")} className="app-button">
+            Настроить самому
           </button>
         </div>
       </section>
@@ -163,20 +124,16 @@ export default function StrategyPage() {
       {mode === "cash" && (
         <section className="app-card">
           <div className="app-card-title mb-3">Состав портфеля</div>
-          <div className="space-y-2 text-[14px]">
-            <div>Cash — {formatNumber(cashOnlyAmount)} ₽ (100%)</div>
-          </div>
+          <div>Cash — {formatNumber(cashOnlyAmount)} ₽ (100%)</div>
         </section>
       )}
 
       {mode === "balanced" && (
         <section className="app-card">
           <div className="app-card-title mb-3">Состав портфеля</div>
-          <div className="space-y-2 text-[14px]">
-            <div>Cash — {formatNumber(balancedCashAmount)} ₽ (25%)</div>
-            <div>Акции — {formatNumber(balancedStocksAmount)} ₽ (60%)</div>
-            <div>Металлы — {formatNumber(balancedMetalsAmount)} ₽ (15%)</div>
-          </div>
+          <div>Cash — {formatNumber(balancedCashAmount)} ₽ (25%)</div>
+          <div>Акции — {formatNumber(balancedStocksAmount)} ₽ (60%)</div>
+          <div>Металлы — {formatNumber(balancedMetalsAmount)} ₽ (15%)</div>
         </section>
       )}
 
@@ -211,12 +168,6 @@ export default function StrategyPage() {
           portfolioResult={s.portfolioResult}
         />
       )}
-
-      <div className="flex">
-        <button onClick={s.handleManualCalculate} className="app-button">
-          Рассчитать
-        </button>
-      </div>
 
       <ResultBlock
         cardClass="app-card"
