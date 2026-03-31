@@ -63,6 +63,9 @@ export function useStrategy() {
   const [otherReturn, setOtherReturn] = useState(
     DEFAULT_PLAN_SETTINGS.otherReturn
   );
+  const [planStartDate, setPlanStartDate] = useState(
+    DEFAULT_PLAN_SETTINGS.planStartDate
+  );
 
   const [portfolioResult, setPortfolioResult] = useState("-");
   const [nominalResult, setNominalResult] = useState("-");
@@ -102,6 +105,7 @@ export function useStrategy() {
         setCurrencyReturn(saved.currencyReturn);
 
         setOtherReturn(saved.otherReturn);
+        setPlanStartDate(saved.planStartDate);
 
         hasLoadedRef.current = true;
       } catch (error) {
@@ -177,6 +181,7 @@ export function useStrategy() {
         currencyShare,
         currencyReturn,
         otherReturn,
+        planStartDate,
       })
         .then(() => {
           setSaveStatus("saved");
@@ -207,6 +212,7 @@ export function useStrategy() {
     currencyShare,
     currencyReturn,
     otherReturn,
+    planStartDate,
   ]);
 
   useEffect(() => {
@@ -231,6 +237,7 @@ export function useStrategy() {
     currencyShare,
     currencyReturn,
     otherReturn,
+    planStartDate,
   ]);
 
   const totalManualShare = useMemo(() => {
@@ -311,6 +318,8 @@ export function useStrategy() {
 
     otherReturn,
     setOtherReturn,
+    planStartDate,
+    setPlanStartDate,
 
     portfolioResult,
     nominalResult,

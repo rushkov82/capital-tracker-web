@@ -37,9 +37,21 @@ export type CapitalCalculationResult =
       error: string;
     };
 
-export function calculateCapital(
-  input: CapitalCalculationInput
-): CapitalCalculationResult {
+export type ProgressCalculationResult =
+  | {
+      success: true;
+      portfolioRatePercent: number;
+      expectedCapitalNow: number;
+      elapsedMonths: number;
+      totalMonths: number;
+      progressPercent: number;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+function parseInput(input: CapitalCalculationInput) {
   const start = Number(input.initialCapital);
   const monthly = Number(input.monthlyContribution);
   const inflationValue = Number(input.inflation);
@@ -84,7 +96,7 @@ export function calculateCapital(
 
   if (values.some((v) => Number.isNaN(v))) {
     return {
-      success: false,
+      success: false as const,
       error: "Введите корректные данные",
     };
   }
@@ -98,7 +110,7 @@ export function calculateCapital(
 
   if (totalManualShare > 100) {
     return {
-      success: false,
+      success: false as const,
       error: "Сумма долей превышает 100%",
     };
   }
@@ -114,29 +126,98 @@ export function calculateCapital(
       otherShareValue * otherReturnValue) /
     100;
 
-  const portfolioRate = portfolioRatePercent / 100;
-  const inflationRate = inflationValue / 100;
-  const growthRate = contributionGrowthValue / 100;
+  return {
+    success: true as const,
+    start,
+    monthly,
+    inflationValue,
+    contributionGrowthValue,
+    yearsValue,
+    portfolioRatePercent,
+    otherShareValue,
+    totalManualShare,
+  };
+}
 
-  let capital = start;
-  let currentMonthly = monthly;
+export function calculateCapital(
+  input: CapitalCalculationInput
+): CapitalCalculationResult {
+  const parsed = parseInput(input);
 
-  for (let i = 0; i < yearsValue; i += 1) {
+  if (!parsed.success) {
+    return parsed;
+  }
+
+  const portfolioRate = parsed.portfolioRatePercent / 100;
+  const inflationRate = parsed.inflationValue / 100;
+  const growthRate = parsed.contributionGrowthValue / 100;
+
+  let capital = parsed.start;
+  let currentMonthly = parsed.monthly;
+
+  for (let i = 0; i < parsed.yearsValue; i += 1) {
     const yearly = currentMonthly * 12;
     const income = capital * portfolioRate;
     capital += yearly + income;
     currentMonthly *= 1 + growthRate;
   }
 
-  const realCapital = capital / Math.pow(1 + inflationRate, yearsValue);
+  const realCapital = capital / Math.pow(1 + inflationRate, parsed.yearsValue);
 
   return {
     success: true,
-    portfolioRatePercent,
+    portfolioRatePercent: parsed.portfolioRatePercent,
     nominalCapital: capital,
     realCapital,
-    otherSharePercent: otherShareValue,
-    totalManualShare,
+    otherSharePercent: parsed.otherShareValue,
+    totalManualShare: parsed.totalManualShare,
+  };
+}
+
+export function calculateExpectedCapitalNow(
+  input: CapitalCalculationInput,
+  startDate: Date,
+  currentDate: Date = new Date()
+): ProgressCalculationResult {
+  const parsed = parseInput(input);
+
+  if (!parsed.success) {
+    return parsed;
+  }
+
+  const totalMonths = parsed.yearsValue * 12;
+
+  const elapsedMonthsRaw =
+    (currentDate.getFullYear() - startDate.getFullYear()) * 12 +
+    (currentDate.getMonth() - startDate.getMonth());
+
+  const elapsedMonths = Math.max(0, Math.min(totalMonths, elapsedMonthsRaw));
+
+  const monthlyPortfolioRate = parsed.portfolioRatePercent / 100 / 12;
+  const yearlyGrowthRate = parsed.contributionGrowthValue / 100;
+
+  let capital = parsed.start;
+  let currentMonthly = parsed.monthly;
+
+  for (let month = 0; month < elapsedMonths; month += 1) {
+    capital += currentMonthly;
+    capital *= 1 + monthlyPortfolioRate;
+
+    if ((month + 1) % 12 === 0) {
+      currentMonthly *= 1 + yearlyGrowthRate;
+    }
+  }
+
+  const progressPercent =
+    totalMonths === 0 ? 100 : (elapsedMonths / totalMonths) * 100;
+
+  return {
+    success: true,
+    portfolioRatePercent: parsed.portfolioRatePercent,
+    expectedCapitalNow: capital,
+    elapsedMonths,
+    totalMonths,
+    progressPercent,
   };
 }
 

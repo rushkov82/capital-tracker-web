@@ -27,6 +27,10 @@ function mapRow(row: any) {
     currencyReturn: String(row.currency_return ?? "2"),
 
     otherReturn: String(row.other_return ?? "0"),
+    planStartDate:
+      row.plan_start_date instanceof Date
+        ? row.plan_start_date.toISOString().slice(0, 10)
+        : String(row.plan_start_date ?? ""),
   };
 }
 
@@ -50,7 +54,8 @@ export async function GET() {
         real_estate_return,
         currency_share,
         currency_return,
-        other_return
+        other_return,
+        plan_start_date
       FROM plan_settings
       WHERE user_id = $1
       LIMIT 1
@@ -100,12 +105,13 @@ export async function POST(request: Request) {
         currency_share,
         currency_return,
         other_return,
+        plan_start_date,
         updated_at
       )
       VALUES (
         $1,$2,$3,$4,$5,$6,
         $7,$8,$9,$10,$11,$12,
-        $13,$14,$15,$16,$17,NOW()
+        $13,$14,$15,$16,$17,$18,NOW()
       )
       ON CONFLICT (user_id)
       DO UPDATE SET
@@ -125,6 +131,7 @@ export async function POST(request: Request) {
         currency_share = EXCLUDED.currency_share,
         currency_return = EXCLUDED.currency_return,
         other_return = EXCLUDED.other_return,
+        plan_start_date = EXCLUDED.plan_start_date,
         updated_at = NOW()
       RETURNING
         initial_capital,
@@ -142,7 +149,8 @@ export async function POST(request: Request) {
         real_estate_return,
         currency_share,
         currency_return,
-        other_return
+        other_return,
+        plan_start_date
       `,
       [
         DEFAULT_USER_ID,
@@ -162,6 +170,7 @@ export async function POST(request: Request) {
         Number(body.currencyShare ?? 0),
         Number(body.currencyReturn ?? 0),
         Number(body.otherReturn ?? 0),
+        body.planStartDate || null,
       ]
     );
 

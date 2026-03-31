@@ -24,6 +24,7 @@ export type PlanSettings = {
   currencyReturn: string;
 
   otherReturn: string;
+  planStartDate: string;
 };
 
 export const DEFAULT_PLAN_SETTINGS: PlanSettings = {
@@ -49,6 +50,7 @@ export const DEFAULT_PLAN_SETTINGS: PlanSettings = {
   currencyReturn: "2",
 
   otherReturn: "0",
+  planStartDate: new Date().toISOString().slice(0, 10),
 };
 
 async function parseResponse<T>(response: Response): Promise<T> {
@@ -73,7 +75,11 @@ export async function fetchPlanSettings(): Promise<PlanSettings> {
     return DEFAULT_PLAN_SETTINGS;
   }
 
-  return data;
+  return {
+    ...DEFAULT_PLAN_SETTINGS,
+    ...data,
+    planStartDate: data.planStartDate || DEFAULT_PLAN_SETTINGS.planStartDate,
+  };
 }
 
 export async function upsertPlanSettings(
