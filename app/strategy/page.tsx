@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import MainParameters from "@/components/MainParameters";
 import PortfolioStructure from "@/components/PortfolioStructure";
 import ResultBlock from "@/components/ResultBlock";
 import { useStrategy } from "@/hooks/useStrategy";
+import { formatNumber } from "@/lib/calculations";
 
 type StrategyMode = "cash" | "balanced" | "manual";
 
@@ -51,6 +52,17 @@ export default function StrategyPage() {
       s.setOtherReturn("0");
     }
   }, [mode]);
+
+  const baseCapital = useMemo(() => {
+    const value = Number(s.initialCapital || 0);
+    return Number.isNaN(value) ? 0 : value;
+  }, [s.initialCapital]);
+
+  const cashOnlyAmount = baseCapital;
+
+  const balancedCashAmount = Math.round(baseCapital * 0.25);
+  const balancedStocksAmount = Math.round(baseCapital * 0.6);
+  const balancedMetalsAmount = Math.round(baseCapital * 0.15);
 
   return (
     <div className="space-y-4">
@@ -150,7 +162,10 @@ export default function StrategyPage() {
 
       {mode === "cash" && (
         <section className="app-card">
-          <div className="app-text">Все деньги учитываются как Cash.</div>
+          <div className="app-card-title mb-3">Состав портфеля</div>
+          <div className="space-y-2 text-[14px]">
+            <div>Cash — {formatNumber(cashOnlyAmount)} ₽ (100%)</div>
+          </div>
         </section>
       )}
 
@@ -158,9 +173,9 @@ export default function StrategyPage() {
         <section className="app-card">
           <div className="app-card-title mb-3">Состав портфеля</div>
           <div className="space-y-2 text-[14px]">
-            <div>Cash — 25%</div>
-            <div>Акции — 60%</div>
-            <div>Металлы — 15%</div>
+            <div>Cash — {formatNumber(balancedCashAmount)} ₽ (25%)</div>
+            <div>Акции — {formatNumber(balancedStocksAmount)} ₽ (60%)</div>
+            <div>Металлы — {formatNumber(balancedMetalsAmount)} ₽ (15%)</div>
           </div>
         </section>
       )}
