@@ -14,10 +14,15 @@ import ContributionForm from "@/components/ContributionForm";
 import AdjustmentForm from "@/components/AdjustmentForm";
 import FactDistribution from "@/components/FactDistribution";
 import OperationsList from "@/components/OperationsList";
-import { formatNumber, formatPercent } from "@/lib/calculations";
+import {
+  formatNumber,
+  formatPercent,
+} from "@/lib/calculations";
+import { fetchPlanSettings } from "@/lib/plan";
 
 export default function CapitalPage() {
   const [operations, setOperations] = useState<Operation[]>([]);
+  const [plan, setPlan] = useState<any>(null);
 
   const [actualContribution, setActualContribution] = useState("");
   const [contributionComment, setContributionComment] = useState("");
@@ -38,7 +43,17 @@ export default function CapitalPage() {
 
   useEffect(() => {
     void loadOperations();
+    void loadPlan();
   }, []);
+
+  async function loadPlan() {
+    try {
+      const data = await fetchPlanSettings();
+      setPlan(data);
+    } catch (e) {
+      console.log("plan load error", e);
+    }
+  }
 
   async function loadOperations() {
     try {
@@ -137,6 +152,27 @@ export default function CapitalPage() {
     return getTotalFactAmount(groupedFact);
   }, [groupedFact]);
 
+  // 🔥 ПЛАН
+  const plannedNow = useMemo(() => {
+    if (!plan) return 0;
+
+    const start = Number(plan.initialCapital || 0);
+    const monthly = Number(plan.monthlyContribution || 0);
+
+    const startDate = new Date(plan.planStartDate);
+    const now = new Date();
+
+    const months =
+      (now.getFullYear() - startDate.getFullYear()) * 12 +
+      (now.getMonth() - startDate.getMonth());
+
+    const safeMonths = Math.max(0, months);
+
+    return start + safeMonths * monthly;
+  }, [plan]);
+
+  const deviation = totalFactAmount - plannedNow;
+
   const moneyOperations = useMemo(() => {
     return operations.filter(
       (operation) => operation.type === "income" || operation.type === "expense"
@@ -184,6 +220,26 @@ export default function CapitalPage() {
             style={{ color: totalFactAmount < 0 ? "#dc2626" : "var(--accent)" }}
           >
             {formatNumber(totalFactAmount)} ₽
+          </div>
+        </section>
+
+        {/* 🔥 НОВЫЙ БЛОК */}
+        <section className="app-card">
+          <div className="app-text-small mb-2">План vs факт</div>
+
+          <div className="space-y-1 text-[14px]">
+            <div>
+              План: <b>{formatNumber(plannedNow)} ₽</b>
+            </div>
+            <div>
+              Факт: <b>{formatNumber(totalFactAmount)} ₽</b>
+            </div>
+            <div>
+              Отклонение:{" "}
+              <b style={{ color: deviation < 0 ? "#dc2626" : "#16a34a" }}>
+                {formatNumber(deviation)} ₽
+              </b>
+            </div>
           </div>
         </section>
       </div>
