@@ -1,37 +1,11 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
-type RouteContext = {
-  params: { id: string };
-};
-
-export async function PATCH(request: Request, { params }: RouteContext) {
+export async function GET() {
   try {
-    const { id } = params;
-    const body = await request.json();
-
-    const amount =
-      body.amount !== undefined ? Number(body.amount) : undefined;
-    const comment = body.comment !== undefined ? body.comment : undefined;
-    const asset_category =
-      body.asset_category !== undefined ? body.asset_category : undefined;
-
-    if (amount !== undefined && (Number.isNaN(amount) || amount <= 0)) {
-      return NextResponse.json(
-        { error: "Некорректная сумма" },
-        { status: 400 }
-      );
-    }
-
     const result = await query(
       `
-      UPDATE operations
-      SET
-        amount = COALESCE($1, amount),
-        comment = COALESCE($2, comment),
-        asset_category = COALESCE($3, asset_category)
-      WHERE id = $4
-      RETURNING
+      SELECT
         id,
         amount,
         comment,
@@ -39,20 +13,12 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         asset_category,
         created_at,
         type
-      `,
-      [amount, comment, asset_category, id]
+      FROM operations
+      ORDER BY operation_date DESC, created_at DESC
+      `
     );
 
-    if (result.rows.length === 0) {
-      return NextResponse.json(
-        { error: "Операция не найдена" },
-        { status: 404 }
-      );
-    }
-
-    const row = result.rows[0];
-
-    return NextResponse.json({
+    const operations = result.rows.map((row) => ({
       id: String(row.id),
       amount: Number(row.amount),
       comment: row.comment,
@@ -66,48 +32,95 @@ export async function PATCH(request: Request, { params }: RouteContext) {
           ? row.created_at.toISOString()
           : String(row.created_at),
       type: row.type,
-    });
+    }));
+
+    return NextResponse.json(operations);
   } catch (error) {
     return NextResponse.json(
       {
         error:
           error instanceof Error
             ? error.message
-            : "Не удалось обновить операцию",
+            : "Не удалось загрузить операции",
       },
       { status: 500 }
     );
   }
 }
 
-export async function DELETE(_request: Request, { params }: RouteContext) {
+export async function POST(request: Request) {
   try {
-    const { id } = params;
+    const body = await request.json();
 
-    const result = await query(
-      `
-      DELETE FROM operations
-      WHERE id = $1
-      RETURNING id
-      `,
-      [id]
-    );
+    const amount = Number(body.amount);
+    const comment = body.comment ?? null;
+    const operation_date =
+      body.operation_date ?? new Date().toISOString().slice(0, 10);
+    const asset_category = body.asset_category ?? null;
+    const type = body.type;
 
-    if (result.rows.length === 0) {
+    if (!amount || Number.isNaN(amount)) {
       return NextResponse.json(
-        { error: "Операция не найдена" },
-        { status: 404 }
+        { error: "Некорректная сумма" },
+        { status: 400 }
       );
     }
 
-    return NextResponse.json({ ok: true });
+    if (!type || !["income", "expense", "adjustment"].includes(type)) {
+      return NextResponse.json(
+        { error: "Некорректный тип операции" },
+        { status: 400 }
+      );
+    }
+
+    const result = await query(
+      `
+      INSERT INTO operations (
+        amount,
+        comment,
+        operation_date,
+        asset_category,
+        type
+      )
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING
+        id,
+        amount,
+        comment,
+        operation_date,
+        asset_category,
+        created_at,
+        type
+      `,
+      [amount, comment, operation_date, asset_category, type]
+    );
+
+    const row = result.rows[0];
+
+    const operation = {
+      id: String(row.id),
+      amount: Number(row.amount),
+      comment: row.comment,
+      operation_date:
+        row.operation_date instanceof Date
+          ? row.operation_date.toISOString().slice(0, 10)
+          : String(row.operation_date),
+      asset_category: row.asset_category,
+      created_at:
+        row.created_at instanceof Date
+          ? row.created_at.toISOString()
+          : String(row.created_at),
+      type: row.type,
+    };
+
+    return NextResponse.json(operation, { status: 201 });
   } catch (error) {
     return NextResponse.json(
       {
         error:
           error instanceof Error
             ? error.message
-            : "Не удалось удалить операцию",
+            : "Не удалось создать операцию",
       },
       { status: 500 }
     );
