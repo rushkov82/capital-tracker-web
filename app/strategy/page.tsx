@@ -15,6 +15,8 @@ import {
   upsertPlanSettings,
 } from "@/lib/plan";
 
+type SaveStatus = "idle" | "saving" | "saved" | "error";
+
 export default function StrategyPage() {
   const [initialCapital, setInitialCapital] = useState(
     DEFAULT_PLAN_SETTINGS.initialCapital
@@ -71,6 +73,7 @@ export default function StrategyPage() {
   const [nominalResult, setNominalResult] = useState("-");
   const [realResult, setRealResult] = useState("-");
   const [errorText, setErrorText] = useState("");
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   const hasLoadedRef = useRef(false);
 
@@ -111,6 +114,7 @@ export default function StrategyPage() {
         setErrorText(
           error instanceof Error ? error.message : "Ошибка загрузки стратегии"
         );
+        setSaveStatus("error");
         hasLoadedRef.current = true;
       }
     }
@@ -124,6 +128,8 @@ export default function StrategyPage() {
 
   useEffect(() => {
     if (!hasLoadedRef.current) return;
+
+    setSaveStatus("saving");
 
     const timeout = window.setTimeout(() => {
       void upsertPlanSettings({
@@ -143,11 +149,16 @@ export default function StrategyPage() {
         currencyShare,
         currencyReturn,
         otherReturn,
-      }).catch((error) => {
-        setErrorText(
-          error instanceof Error ? error.message : "Ошибка сохранения стратегии"
-        );
-      });
+      })
+        .then(() => {
+          setSaveStatus("saved");
+        })
+        .catch((error) => {
+          setErrorText(
+            error instanceof Error ? error.message : "Ошибка сохранения стратегии"
+          );
+          setSaveStatus("error");
+        });
     }, 400);
 
     return () => window.clearTimeout(timeout);
@@ -252,13 +263,38 @@ export default function StrategyPage() {
     calculateAndSetResult();
   }
 
+  function getSaveStatusText() {
+    if (saveStatus === "saving") return "Сохраняется...";
+    if (saveStatus === "saved") return "Сохранено";
+    if (saveStatus === "error") return "Ошибка сохранения";
+    return "";
+  }
+
+  function getSaveStatusColor() {
+    if (saveStatus === "saving") return "#94a3b8";
+    if (saveStatus === "saved") return "#16a34a";
+    if (saveStatus === "error") return "#dc2626";
+    return "transparent";
+  }
+
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="app-page-title">Стратегия</h1>
-        <p className="app-page-subtitle">
-          Сценарий роста капитала, структура и ориентир по результату
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="app-page-title">Стратегия</h1>
+          <p className="app-page-subtitle">
+            Сценарий роста капитала, структура и ориентир по результату
+          </p>
+        </div>
+
+        {saveStatus !== "idle" && (
+          <div
+            className="text-[13px] leading-[18px] whitespace-nowrap pt-1"
+            style={{ color: getSaveStatusColor() }}
+          >
+            {getSaveStatusText()}
+          </div>
+        )}
       </div>
 
       {errorText && <div className="app-error-box">{errorText}</div>}
