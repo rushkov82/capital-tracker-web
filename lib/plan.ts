@@ -51,106 +51,45 @@ export const DEFAULT_PLAN_SETTINGS: PlanSettings = {
   otherReturn: "0",
 };
 
-function normalizePlanSettings(
-  value: Partial<PlanSettings> | null | undefined
-): PlanSettings {
-  return {
-    initialCapital: value?.initialCapital ?? DEFAULT_PLAN_SETTINGS.initialCapital,
-    monthlyContribution:
-      value?.monthlyContribution ?? DEFAULT_PLAN_SETTINGS.monthlyContribution,
-    inflation: value?.inflation ?? DEFAULT_PLAN_SETTINGS.inflation,
-    contributionGrowth:
-      value?.contributionGrowth ?? DEFAULT_PLAN_SETTINGS.contributionGrowth,
-    years: value?.years ?? DEFAULT_PLAN_SETTINGS.years,
+async function parseResponse<T>(response: Response): Promise<T> {
+  const data = await response.json();
 
-    stocksBondsShare:
-      value?.stocksBondsShare ?? DEFAULT_PLAN_SETTINGS.stocksBondsShare,
-    stocksBondsReturn:
-      value?.stocksBondsReturn ?? DEFAULT_PLAN_SETTINGS.stocksBondsReturn,
-
-    rubCashShare: value?.rubCashShare ?? DEFAULT_PLAN_SETTINGS.rubCashShare,
-    rubCashReturn: value?.rubCashReturn ?? DEFAULT_PLAN_SETTINGS.rubCashReturn,
-
-    metalsShare: value?.metalsShare ?? DEFAULT_PLAN_SETTINGS.metalsShare,
-    metalsReturn: value?.metalsReturn ?? DEFAULT_PLAN_SETTINGS.metalsReturn,
-
-    realEstateShare:
-      value?.realEstateShare ?? DEFAULT_PLAN_SETTINGS.realEstateShare,
-    realEstateReturn:
-      value?.realEstateReturn ?? DEFAULT_PLAN_SETTINGS.realEstateReturn,
-
-    currencyShare: value?.currencyShare ?? DEFAULT_PLAN_SETTINGS.currencyShare,
-    currencyReturn:
-      value?.currencyReturn ?? DEFAULT_PLAN_SETTINGS.currencyReturn,
-
-    otherReturn: value?.otherReturn ?? DEFAULT_PLAN_SETTINGS.otherReturn,
-  };
-}
-
-export function loadPlanSettings(): PlanSettings {
-  if (typeof window === "undefined") {
-    return DEFAULT_PLAN_SETTINGS;
+  if (!response.ok) {
+    throw new Error(data?.error || "Ошибка запроса");
   }
 
-  const raw = localStorage.getItem(PLAN_STORAGE_KEY);
-  if (!raw) return DEFAULT_PLAN_SETTINGS;
-
-  try {
-    const parsed = JSON.parse(raw) as Partial<PlanSettings>;
-    return normalizePlanSettings(parsed);
-  } catch {
-    return DEFAULT_PLAN_SETTINGS;
-  }
-}
-
-export function savePlanSettings(settings: PlanSettings) {
-  if (typeof window === "undefined") return;
-
-  const normalized = normalizePlanSettings(settings);
-  localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(normalized));
-  window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
+  return data;
 }
 
 export async function fetchPlanSettings(): Promise<PlanSettings> {
-  return loadPlanSettings();
+  const response = await fetch("/api/plan", {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  const data = await parseResponse<PlanSettings | null>(response);
+
+  if (!data) {
+    return DEFAULT_PLAN_SETTINGS;
+  }
+
+  return data;
 }
 
-export async function upsertPlanSettings(settings: PlanSettings) {
-  savePlanSettings(settings);
-}
+export async function upsertPlanSettings(
+  settings: PlanSettings
+): Promise<void> {
+  const response = await fetch("/api/plan", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(settings),
+  });
 
-export function getPlanAllocation(settings: PlanSettings) {
-  const items = [
-    {
-      category: "Акции/облигации",
-      planPercent: Number(settings.stocksBondsShare) || 0,
-    },
-    {
-      category: "Кэш в рублях",
-      planPercent: Number(settings.rubCashShare) || 0,
-    },
-    {
-      category: "Драгметаллы",
-      planPercent: Number(settings.metalsShare) || 0,
-    },
-    {
-      category: "Недвижимость",
-      planPercent: Number(settings.realEstateShare) || 0,
-    },
-    {
-      category: "Валюта",
-      planPercent: Number(settings.currencyShare) || 0,
-    },
-  ];
+  await parseResponse(response);
 
-  const manualTotal = items.reduce((sum, item) => sum + item.planPercent, 0);
-  const otherPercent = Math.max(0, 100 - manualTotal);
-
-  return [
-    ...items,
-    {
-      category: "Прочее",
-      planPercent: otherPercent,
-    },
-  ];
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
+  }
 }
