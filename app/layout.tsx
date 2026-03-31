@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
 import ToastViewport from "@/components/ui/ToastViewport";
@@ -6,6 +6,12 @@ import ToastViewport from "@/components/ui/ToastViewport";
 export const metadata: Metadata = {
   title: "Capital Tracker",
   description: "Инструмент стратегического планирования и контроля капитала",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
