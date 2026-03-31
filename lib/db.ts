@@ -1,14 +1,13 @@
 import { Pool } from "pg";
 
 const pool = new Pool({
-  host: "159.194.203.57",
+  host: "127.0.0.1",
   port: 5432,
-  user: "12345678",
-  password: "ТВОЙ_ПАРОЛЬ",
+  user: "postgres",
+  password: "12345678",
   database: "captrack",
 });
 
-export async function query(text: string, params?: any[]) {
-  const res = await pool.query(text, params);
-  return res;
+export async function query(text: string, params?: unknown[]) {
+  return pool.query(text, params);
 }
