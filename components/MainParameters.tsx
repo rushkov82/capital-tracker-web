@@ -49,12 +49,14 @@ export default function MainParameters({
 
       <div className="space-y-3">
         <div>
-          <div className="app-label">Начальный капитал</div>
+          <div className="app-label">Сколько у тебя есть сейчас</div>
           <input
             className={commonInputClass}
             value={initialCapital}
             onChange={(e) => setInitialCapital(e.target.value)}
+            placeholder="0"
           />
+          <div className="app-text-small mt-1">Можно начать с нуля</div>
         </div>
 
         <div>
@@ -93,7 +95,6 @@ export default function MainParameters({
           />
         </div>
 
-        {/* 👇 ВОТ ОНА — ДАТА */}
         <div>
           <div className="app-label">Дата старта плана</div>
           <input
