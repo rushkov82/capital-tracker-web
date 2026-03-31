@@ -44,6 +44,8 @@ export default function StrategyPage() {
           setContributionGrowth={s.setContributionGrowth}
           years={s.years}
           setYears={s.setYears}
+          planStartDate={s.planStartDate}
+          setPlanStartDate={s.setPlanStartDate}
         />
 
         <PortfolioStructure
