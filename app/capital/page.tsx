@@ -222,7 +222,7 @@ export default function CapitalPage() {
         if (dateCompare !== 0) return dateCompare;
         return b.created_at.localeCompare(a.created_at);
       })
-      .slice(0, 3);
+      .slice(0, 5);
   }, [moneyOperations]);
 
   const recentAdjustments = useMemo(() => {
@@ -232,7 +232,7 @@ export default function CapitalPage() {
         if (dateCompare !== 0) return dateCompare;
         return b.created_at.localeCompare(a.created_at);
       })
-      .slice(0, 3);
+      .slice(0, 5);
   }, [adjustmentOperations]);
 
   return (
@@ -244,82 +244,91 @@ export default function CapitalPage() {
         </p>
       </div>
 
-      <section className="app-card">
-        <h2 className="app-card-title mb-4">Контроль месяца</h2>
+      <div className="grid gap-4 xl:grid-cols-3 md:grid-cols-2">
+        <section className="app-card">
+          <h2 className="app-card-title mb-4">Контроль месяца</h2>
 
-        <div className="space-y-2 text-[14px]">
-          <div className="flex items-center justify-between gap-4">
-            <span>План на месяц</span>
-            <b>{formatNumber(monthlyPlan)} ₽</b>
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <span>Внесено</span>
-            <b>{formatNumber(currentMonthFact)} ₽</b>
-          </div>
-
-          {currentMonthDelta < 0 ? (
+          <div className="space-y-2 text-[14px]">
             <div className="flex items-center justify-between gap-4">
-              <span>Осталось до плана</span>
-              <b style={{ color: "#dc2626" }}>
-                {formatNumber(currentMonthRemaining)} ₽
-              </b>
+              <span>План на месяц</span>
+              <b>{formatNumber(monthlyPlan)} ₽</b>
             </div>
-          ) : (
-            <div className="flex items-center justify-between gap-4">
-              <span>Перевыполнение</span>
-              <b style={{ color: "#16a34a" }}>
-                +{formatNumber(currentMonthOver)} ₽
-              </b>
-            </div>
-          )}
 
+            <div className="flex items-center justify-between gap-4">
+              <span>Внесено</span>
+              <b>{formatNumber(currentMonthFact)} ₽</b>
+            </div>
+
+            {currentMonthDelta < 0 ? (
+              <div className="flex items-center justify-between gap-4">
+                <span>Осталось до плана</span>
+                <b style={{ color: "#dc2626" }}>
+                  {formatNumber(currentMonthRemaining)} ₽
+                </b>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-4">
+                <span>Перевыполнение</span>
+                <b style={{ color: "#16a34a" }}>
+                  +{formatNumber(currentMonthOver)} ₽
+                </b>
+              </div>
+            )}
+
+            <div
+              className="pt-2 text-[13px] font-medium"
+              style={{
+                color: currentMonthDelta < 0 ? "#dc2626" : "#16a34a",
+              }}
+            >
+              {currentMonthStatusText}
+            </div>
+          </div>
+        </section>
+
+        <section className="app-card">
+          <div className="app-text-small mb-2">Текущий капитал</div>
           <div
-            className="pt-2 text-[13px] font-medium"
-            style={{
-              color: currentMonthDelta < 0 ? "#dc2626" : "#16a34a",
-            }}
+            className="text-[32px] leading-[36px] font-semibold"
+            style={{ color: totalFactAmount < 0 ? "#dc2626" : "var(--accent)" }}
           >
-            {currentMonthStatusText}
+            {formatNumber(totalFactAmount)} ₽
           </div>
-        </div>
-      </section>
+        </section>
+
+        <section className="app-card md:col-span-2 xl:col-span-1">
+          <h2 className="app-card-title mb-4">Общий прогресс по плану</h2>
+
+          <div className="space-y-2 text-[14px]">
+            <div className="flex items-center justify-between gap-4">
+              <span>Должно быть сейчас</span>
+              <b>{formatNumber(plannedNow)} ₽</b>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <span>Фактически</span>
+              <b>{formatNumber(totalFactAmount)} ₽</b>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <span>Отклонение</span>
+              <b style={{ color: deviation < 0 ? "#dc2626" : "#16a34a" }}>
+                {formatNumber(deviation)} ₽
+              </b>
+            </div>
+          </div>
+        </section>
+      </div>
 
       <section className="app-card">
-        <div className="app-text-small mb-1">Текущий капитал</div>
-        <div
-          className="text-[28px] leading-[32px] font-semibold"
-          style={{ color: totalFactAmount < 0 ? "#dc2626" : "var(--accent)" }}
-        >
-          {formatNumber(totalFactAmount)} ₽
-        </div>
-      </section>
-
-      <section className="app-card">
-        <h2 className="app-card-title mb-4">Общий прогресс по плану</h2>
-
-        <div className="space-y-2 text-[14px]">
-          <div className="flex items-center justify-between gap-4">
-            <span>Должно быть сейчас</span>
-            <b>{formatNumber(plannedNow)} ₽</b>
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <span>Фактически</span>
-            <b>{formatNumber(totalFactAmount)} ₽</b>
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <span>Отклонение</span>
-            <b style={{ color: deviation < 0 ? "#dc2626" : "#16a34a" }}>
-              {formatNumber(deviation)} ₽
-            </b>
+        <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
+          <div>
+            <h2 className="app-card-title">Добавить операцию</h2>
+            <div className="app-text-small mt-1">
+              Пополнение, вывод или переоценка активов
+            </div>
           </div>
         </div>
-      </section>
-
-      <section className="app-card">
-        <h2 className="app-card-title mb-4">Добавить операцию</h2>
 
         <div className="grid gap-4 xl:grid-cols-2">
           <ContributionForm
@@ -358,48 +367,54 @@ export default function CapitalPage() {
         </div>
       </section>
 
-      <section className="app-card">
-        <h2 className="app-card-title mb-4">Последние операции</h2>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)]">
+        <section className="app-card">
+          <h2 className="app-card-title mb-4">Последние операции</h2>
 
-        <OperationsList
-          cardClass=""
-          operations={recentMoneyOperations}
-          categories={[...ASSET_CATEGORIES]}
-          formatNumber={formatNumber}
-          onReload={loadOperations}
-        />
+          <OperationsList
+            cardClass=""
+            operations={recentMoneyOperations}
+            categories={[...ASSET_CATEGORIES]}
+            formatNumber={formatNumber}
+            onReload={loadOperations}
+          />
 
-        <div className="border-t border-[var(--border)] mt-4 pt-3">
-          <div className="flex justify-end">
-            <Link href="/history" className="app-button">
-              Все операции →
-            </Link>
+          <div className="border-t border-[var(--border)] mt-4 pt-3">
+            <div className="flex justify-end">
+              <Link href="/history" className="app-button">
+                Все операции →
+              </Link>
+            </div>
           </div>
+        </section>
+
+        <div className="grid gap-4">
+          <section className="app-card">
+            <h2 className="app-card-title mb-2">Переоценка активов</h2>
+            <div className="app-text-small mb-4">
+              История изменений стоимости
+            </div>
+
+            <OperationsList
+              cardClass=""
+              operations={recentAdjustments}
+              categories={[...ASSET_CATEGORIES]}
+              formatNumber={formatNumber}
+              onReload={loadOperations}
+            />
+          </section>
+
+          <FactDistribution
+            cardClass="app-card"
+            title="Баланс операций"
+            subtitle="Пополнения, выводы и переоценки в текущем капитале"
+            items={groupedFact}
+            totalAmount={totalFactAmount}
+            formatNumber={formatNumber}
+            formatPercent={formatPercent}
+          />
         </div>
-      </section>
-
-      <section className="app-card">
-        <h2 className="app-card-title mb-2">Переоценка активов</h2>
-        <div className="app-text-small mb-4">История изменений стоимости</div>
-
-        <OperationsList
-          cardClass=""
-          operations={recentAdjustments}
-          categories={[...ASSET_CATEGORIES]}
-          formatNumber={formatNumber}
-          onReload={loadOperations}
-        />
-      </section>
-
-      <FactDistribution
-        cardClass="app-card"
-        title="Баланс операций"
-        subtitle="Пополнения, выводы и переоценки в текущем капитале"
-        items={groupedFact}
-        totalAmount={totalFactAmount}
-        formatNumber={formatNumber}
-        formatPercent={formatPercent}
-      />
+      </div>
     </div>
   );
 }

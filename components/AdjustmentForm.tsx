@@ -37,7 +37,7 @@ export default function AdjustmentForm({
         Учёт изменения стоимости активов
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         <FormRow label="Сумма переоценки" hint="₽">
           <input
             className={commonInputClass}
@@ -79,7 +79,7 @@ export default function AdjustmentForm({
           />
         </FormRow>
 
-        <div className="flex justify-end pt-2">
+        <div className="flex justify-end pt-1">
           <button onClick={onSave} className="app-button">
             Сохранить
           </button>

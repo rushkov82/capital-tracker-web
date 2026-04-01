@@ -40,10 +40,10 @@ export default function ContributionForm({
 
   return (
     <section className={cardClass}>
-      <h3 className="app-card-title mb-4">Пополнение или вывод</h3>
+      <h3 className="app-card-title mb-3">Пополнение или вывод</h3>
 
-      <div className="space-y-3">
-        <div className="space-y-2">
+      <div className="space-y-2.5">
+        <div className="space-y-1.5">
           <div className="app-label">Тип операции</div>
 
           <SegmentedControl
@@ -110,7 +110,7 @@ export default function ContributionForm({
           />
         </FormRow>
 
-        <div className="flex justify-end pt-2">
+        <div className="flex justify-end pt-1">
           <button onClick={onSave} className="app-button">
             Сохранить
           </button>
