@@ -14,10 +14,7 @@ import ContributionForm from "@/components/ContributionForm";
 import AdjustmentForm from "@/components/AdjustmentForm";
 import FactDistribution from "@/components/FactDistribution";
 import OperationsList from "@/components/OperationsList";
-import {
-  formatNumber,
-  formatPercent,
-} from "@/lib/calculations";
+import { formatNumber, formatPercent } from "@/lib/calculations";
 import { fetchPlanSettings } from "@/lib/plan";
 
 export default function CapitalPage() {
@@ -152,7 +149,6 @@ export default function CapitalPage() {
     return getTotalFactAmount(groupedFact);
   }, [groupedFact]);
 
-  // 🔥 ПЛАН
   const plannedNow = useMemo(() => {
     if (!plan) return 0;
 
@@ -205,14 +201,14 @@ export default function CapitalPage() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-3">
-        <div>
-          <h1 className="app-page-title">Капитал</h1>
-          <p className="app-page-subtitle">
-            Реальные деньги, история взносов и текущая структура
-          </p>
-        </div>
+      <div>
+        <h1 className="app-page-title">Капитал</h1>
+        <p className="app-page-subtitle">
+          Реальные деньги, история взносов и текущая структура
+        </p>
+      </div>
 
+      <div className="grid gap-4 lg:grid-cols-2">
         <section className="app-card">
           <div className="app-text-small mb-1">Текущий капитал</div>
           <div
@@ -223,19 +219,22 @@ export default function CapitalPage() {
           </div>
         </section>
 
-        {/* 🔥 НОВЫЙ БЛОК */}
         <section className="app-card">
           <div className="app-text-small mb-2">План vs факт</div>
 
-          <div className="space-y-1 text-[14px]">
-            <div>
-              План: <b>{formatNumber(plannedNow)} ₽</b>
+          <div className="space-y-2 text-[14px]">
+            <div className="flex items-center justify-between gap-4">
+              <span>План</span>
+              <b>{formatNumber(plannedNow)} ₽</b>
             </div>
-            <div>
-              Факт: <b>{formatNumber(totalFactAmount)} ₽</b>
+
+            <div className="flex items-center justify-between gap-4">
+              <span>Факт</span>
+              <b>{formatNumber(totalFactAmount)} ₽</b>
             </div>
-            <div>
-              Отклонение:{" "}
+
+            <div className="flex items-center justify-between gap-4">
+              <span>Отклонение</span>
               <b style={{ color: deviation < 0 ? "#dc2626" : "#16a34a" }}>
                 {formatNumber(deviation)} ₽
               </b>
@@ -244,39 +243,41 @@ export default function CapitalPage() {
         </section>
       </div>
 
-      <ContributionForm
-        cardClass="app-card"
-        commonInputClass="app-input"
-        selectClass="app-select"
-        categories={[...ASSET_CATEGORIES]}
-        actualContribution={actualContribution}
-        setActualContribution={setActualContribution}
-        contributionCategory={contributionCategory}
-        setContributionCategory={setContributionCategory}
-        contributionDate={contributionDate}
-        setContributionDate={setContributionDate}
-        contributionComment={contributionComment}
-        setContributionComment={setContributionComment}
-        operationType={operationType}
-        setOperationType={setOperationType}
-        onSave={saveContribution}
-      />
+      <div className="grid gap-4 xl:grid-cols-2">
+        <ContributionForm
+          cardClass="app-card"
+          commonInputClass="app-input"
+          selectClass="app-select"
+          categories={[...ASSET_CATEGORIES]}
+          actualContribution={actualContribution}
+          setActualContribution={setActualContribution}
+          contributionCategory={contributionCategory}
+          setContributionCategory={setContributionCategory}
+          contributionDate={contributionDate}
+          setContributionDate={setContributionDate}
+          contributionComment={contributionComment}
+          setContributionComment={setContributionComment}
+          operationType={operationType}
+          setOperationType={setOperationType}
+          onSave={saveContribution}
+        />
 
-      <AdjustmentForm
-        cardClass="app-card"
-        commonInputClass="app-input"
-        selectClass="app-select"
-        categories={[...ASSET_CATEGORIES]}
-        amount={adjustmentAmount}
-        setAmount={setAdjustmentAmount}
-        category={adjustmentCategory}
-        setCategory={setAdjustmentCategory}
-        date={adjustmentDate}
-        setDate={setAdjustmentDate}
-        comment={adjustmentComment}
-        setComment={setAdjustmentComment}
-        onSave={saveAdjustment}
-      />
+        <AdjustmentForm
+          cardClass="app-card"
+          commonInputClass="app-input"
+          selectClass="app-select"
+          categories={[...ASSET_CATEGORIES]}
+          amount={adjustmentAmount}
+          setAmount={setAdjustmentAmount}
+          category={adjustmentCategory}
+          setCategory={setAdjustmentCategory}
+          date={adjustmentDate}
+          setDate={setAdjustmentDate}
+          comment={adjustmentComment}
+          setComment={setAdjustmentComment}
+          onSave={saveAdjustment}
+        />
+      </div>
 
       <section className="app-card">
         <h2 className="app-card-title mb-4">История пополнений и выводов</h2>
