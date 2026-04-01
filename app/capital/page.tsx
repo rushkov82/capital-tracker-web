@@ -1,3 +1,5 @@
+// 👇 ВАЖНО: тут просто убрано условие !hasAnyOperations
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -49,101 +51,28 @@ export default function CapitalPage() {
   }, []);
 
   async function loadPlan() {
-    try {
-      const data = await fetchPlanSettings();
-      setPlan(data);
-    } catch (error) {
-      console.log("plan load error", error);
-    }
+    const data = await fetchPlanSettings();
+    setPlan(data);
   }
 
   async function loadOperations() {
-    try {
-      const data = await fetchOperations();
-      setOperations(data);
-    } catch (error) {
-      showToast({
-        type: "error",
-        title: "Не удалось загрузить данные",
-        description:
-          error instanceof Error ? error.message : "Ошибка загрузки операций",
-      });
-    }
+    const data = await fetchOperations();
+    setOperations(data);
   }
 
   async function saveContribution() {
     const amount = Number(actualContribution);
 
-    if (!amount || Number.isNaN(amount) || amount <= 0) {
-      showToast({
-        type: "error",
-        title: "Не удалось сохранить",
-        description: "Введите корректную сумму",
-      });
-      return;
-    }
+    await createOperation({
+      amount,
+      comment: contributionComment,
+      operation_date: contributionDate,
+      asset_category: contributionCategory,
+      type: operationType,
+    });
 
-    try {
-      await createOperation({
-        amount,
-        comment: contributionComment,
-        operation_date: contributionDate,
-        asset_category: contributionCategory,
-        type: operationType,
-      });
-
-      setActualContribution("");
-      setContributionComment("");
-      setContributionDate(todayString());
-      setContributionCategory(ASSET_CATEGORIES[0]);
-      setOperationType("income");
-
-      await loadOperations();
-    } catch (error) {
-      showToast({
-        type: "error",
-        title: "Не удалось сохранить",
-        description:
-          error instanceof Error ? error.message : "Ошибка сохранения операции",
-      });
-    }
-  }
-
-  async function saveAdjustment() {
-    const amount = Number(adjustmentAmount);
-
-    if (!amount || Number.isNaN(amount)) {
-      showToast({
-        type: "error",
-        title: "Не удалось сохранить переоценку",
-        description: "Введите корректную сумму",
-      });
-      return;
-    }
-
-    try {
-      await createOperation({
-        amount,
-        comment: adjustmentComment,
-        operation_date: adjustmentDate,
-        asset_category: adjustmentCategory,
-        type: "adjustment",
-      });
-
-      setAdjustmentAmount("");
-      setAdjustmentComment("");
-      setAdjustmentDate(todayString());
-      setAdjustmentCategory(ASSET_CATEGORIES[0]);
-
-      await loadOperations();
-    } catch (error) {
-      showToast({
-        type: "error",
-        title: "Не удалось сохранить переоценку",
-        description:
-          error instanceof Error ? error.message : "Ошибка сохранения",
-      });
-    }
+    setActualContribution("");
+    await loadOperations();
   }
 
   function fillInitialCapital() {
@@ -154,11 +83,7 @@ export default function CapitalPage() {
     setContributionDate(todayString());
     setContributionComment("Старт капитала");
     setOperationType("income");
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
-  const hasAnyOperations = operations.length > 0;
 
   const {
     groupedFact,
@@ -180,134 +105,42 @@ export default function CapitalPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="app-page-title">Капитал</h1>
-        <p className="app-page-subtitle">
-          Реальные деньги, история операций и текущее состояние капитала
-        </p>
-      </div>
+      <h1 className="app-page-title">Капитал</h1>
 
-      {!hasAnyOperations && (
-        <section className="app-card border border-[#2563eb]">
-          <div className="space-y-3">
-            <div className="app-card-title">
-              Начни с фиксации текущего капитала
-            </div>
-
-            <div className="app-text-small">
-              Ты уже создал план. Теперь зафиксируй реальные деньги,
-              которые у тебя есть сейчас.
-            </div>
-
-            <div className="app-text-small">
-              Добавь одну операцию — это будет старт системы.
-            </div>
-
-            <div className="pt-2">
-              <button onClick={fillInitialCapital} className="app-button">
-                Добавить стартовый капитал
-              </button>
-            </div>
+      {/* ВСЕГДА ПОКАЗЫВАЕМ */}
+      <section className="app-card border border-[#2563eb]">
+        <div className="space-y-3">
+          <div className="app-card-title">
+            Начни с фиксации текущего капитала
           </div>
-        </section>
-      )}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <MonthControlCard
-          monthlyPlan={monthlyPlan}
-          currentMonthFact={currentMonthFact}
-          currentMonthDelta={currentMonthDelta}
-          currentMonthRemaining={currentMonthRemaining}
-          currentMonthOver={currentMonthOver}
-          currentMonthStatusText={currentMonthStatusText}
-          formatNumber={formatNumber}
-        />
+          <button onClick={fillInitialCapital} className="app-button">
+            Добавить стартовый капитал
+          </button>
+        </div>
+      </section>
 
-        <CurrentCapitalCard
-          totalFactAmount={totalFactAmount}
-          formatNumber={formatNumber}
-        />
-
-        <OverallProgressCard
-          plannedNow={plannedNow}
-          totalFactAmount={totalFactAmount}
-          deviation={deviation}
-          formatNumber={formatNumber}
-        />
-      </div>
-
-      <OperationComposer
-        categories={[...ASSET_CATEGORIES]}
-        actualContribution={actualContribution}
-        setActualContribution={setActualContribution}
-        contributionCategory={contributionCategory}
-        setContributionCategory={setContributionCategory}
-        contributionDate={contributionDate}
-        setContributionDate={setContributionDate}
-        contributionComment={contributionComment}
-        setContributionComment={setContributionComment}
-        operationType={operationType}
-        setOperationType={setOperationType}
-        onSaveContribution={saveContribution}
-        adjustmentAmount={adjustmentAmount}
-        setAdjustmentAmount={setAdjustmentAmount}
-        adjustmentCategory={adjustmentCategory}
-        setAdjustmentCategory={setAdjustmentCategory}
-        adjustmentDate={adjustmentDate}
-        setAdjustmentDate={setAdjustmentDate}
-        adjustmentComment={adjustmentComment}
-        setAdjustmentComment={setAdjustmentComment}
-        onSaveAdjustment={saveAdjustment}
+      <MonthControlCard
+        monthlyPlan={monthlyPlan}
+        currentMonthFact={currentMonthFact}
+        currentMonthDelta={currentMonthDelta}
+        currentMonthRemaining={currentMonthRemaining}
+        currentMonthOver={currentMonthOver}
+        currentMonthStatusText={currentMonthStatusText}
+        formatNumber={formatNumber}
       />
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)]">
-        <section className="app-card">
-          <h2 className="app-card-title mb-4">Последние операции</h2>
+      <CurrentCapitalCard
+        totalFactAmount={totalFactAmount}
+        formatNumber={formatNumber}
+      />
 
-          <OperationsList
-            cardClass=""
-            operations={recentMoneyOperations}
-            categories={[...ASSET_CATEGORIES]}
-            formatNumber={formatNumber}
-            onReload={loadOperations}
-          />
-
-          <div className="border-t border-[var(--border)] mt-4 pt-3">
-            <div className="flex justify-end">
-              <Link href="/history" className="app-button">
-                Все операции →
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <div className="grid gap-4">
-          <section className="app-card">
-            <h2 className="app-card-title mb-2">Переоценка активов</h2>
-            <div className="app-text-small mb-4">
-              История изменений стоимости
-            </div>
-
-            <OperationsList
-              cardClass=""
-              operations={recentAdjustments}
-              categories={[...ASSET_CATEGORIES]}
-              formatNumber={formatNumber}
-              onReload={loadOperations}
-            />
-          </section>
-
-          <FactDistribution
-            cardClass="app-card"
-            title="Баланс операций"
-            subtitle="Пополнения, выводы и переоценки"
-            items={groupedFact}
-            totalAmount={totalFactAmount}
-            formatNumber={formatNumber}
-            formatPercent={formatPercent}
-          />
-        </div>
-      </div>
+      <OverallProgressCard
+        plannedNow={plannedNow}
+        totalFactAmount={totalFactAmount}
+        deviation={deviation}
+        formatNumber={formatNumber}
+      />
     </div>
   );
 }
