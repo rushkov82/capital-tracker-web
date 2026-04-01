@@ -142,7 +142,7 @@ export default function StrategyPage() {
                     : "transparent",
               }}
             >
-              <div className="font-medium">Сбалансированный</div>
+              <div className="font-medium">Баланс</div>
               <div className="app-text-small mt-1">
                 Cash, акции и металлы в готовой пропорции
               </div>
