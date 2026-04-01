@@ -1,24 +1,30 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ASSET_CATEGORIES } from "@/lib/constants";
-import { buildFactDistribution, getTotalFactAmount } from "@/lib/portfolio";
 import {
   createOperation,
   fetchOperations,
   type Operation,
 } from "@/lib/operations";
-import { showToast } from "@/lib/toast";
-import ContributionForm from "@/components/ContributionForm";
-import AdjustmentForm from "@/components/AdjustmentForm";
-import FactDistribution from "@/components/FactDistribution";
-import OperationsList from "@/components/OperationsList";
+import {
+  fetchPlanSettings,
+  type PlanSettings,
+} from "@/lib/plan";
 import { formatNumber, formatPercent } from "@/lib/calculations";
-import { fetchPlanSettings } from "@/lib/plan";
+import { showToast } from "@/lib/toast";
+import OperationsList from "@/components/OperationsList";
+import FactDistribution from "@/components/FactDistribution";
+import MonthControlCard from "@/components/capital/MonthControlCard";
+import CurrentCapitalCard from "@/components/capital/CurrentCapitalCard";
+import OverallProgressCard from "@/components/capital/OverallProgressCard";
+import OperationComposer from "@/components/capital/OperationComposer";
+import { useCapitalData } from "@/lib/hooks/useCapitalData";
 
 export default function CapitalPage() {
   const [operations, setOperations] = useState<Operation[]>([]);
-  const [plan, setPlan] = useState<any>(null);
+  const [plan, setPlan] = useState<PlanSettings | null>(null);
 
   const [actualContribution, setActualContribution] = useState("");
   const [contributionComment, setContributionComment] = useState("");
@@ -46,8 +52,8 @@ export default function CapitalPage() {
     try {
       const data = await fetchPlanSettings();
       setPlan(data);
-    } catch (e) {
-      console.log("plan load error", e);
+    } catch (error) {
+      console.log("plan load error", error);
     }
   }
 
@@ -140,100 +146,23 @@ export default function CapitalPage() {
     }
   }
 
-  const groupedFact = useMemo(() => {
-    return buildFactDistribution(operations);
-  }, [operations]);
-
-  const totalFactAmount = useMemo(() => {
-    return getTotalFactAmount(groupedFact);
-  }, [groupedFact]);
-
-  const currentMonthOperations = useMemo(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-
-    return operations.filter((operation) => {
-      if (operation.type === "adjustment") {
-        return false;
-      }
-
-      const operationDate = new Date(operation.operation_date);
-
-      return (
-        operationDate.getFullYear() === year &&
-        operationDate.getMonth() === month
-      );
-    });
-  }, [operations]);
-
-  const currentMonthFact = useMemo(() => {
-    return currentMonthOperations.reduce((sum, operation) => {
-      if (operation.type === "expense") {
-        return sum - operation.amount;
-      }
-
-      return sum + operation.amount;
-    }, 0);
-  }, [currentMonthOperations]);
-
-  const monthlyPlan = Number(plan?.monthlyContribution || 0);
-  const currentMonthDelta = currentMonthFact - monthlyPlan;
-  const currentMonthRemaining = Math.max(0, monthlyPlan - currentMonthFact);
-  const currentMonthOver = Math.max(0, currentMonthFact - monthlyPlan);
-
-  const currentMonthStatusText =
-    currentMonthDelta >= 0 ? "Ты идёшь по плану" : "Ты отстаёшь от плана";
-
-  const plannedNow = useMemo(() => {
-    if (!plan) return 0;
-
-    const start = Number(plan.initialCapital || 0);
-    const monthly = Number(plan.monthlyContribution || 0);
-
-    const startDate = new Date(plan.planStartDate);
-    const now = new Date();
-
-    const months =
-      (now.getFullYear() - startDate.getFullYear()) * 12 +
-      (now.getMonth() - startDate.getMonth());
-
-    const safeMonths = Math.max(0, months);
-
-    return start + safeMonths * monthly;
-  }, [plan]);
-
-  const deviation = totalFactAmount - plannedNow;
-
-  const moneyOperations = useMemo(() => {
-    return operations.filter(
-      (operation) => operation.type === "income" || operation.type === "expense"
-    );
-  }, [operations]);
-
-  const adjustmentOperations = useMemo(() => {
-    return operations.filter((operation) => operation.type === "adjustment");
-  }, [operations]);
-
-  const recentMoneyOperations = useMemo(() => {
-    return [...moneyOperations]
-      .sort((a, b) => {
-        const dateCompare = b.operation_date.localeCompare(a.operation_date);
-        if (dateCompare !== 0) return dateCompare;
-        return b.created_at.localeCompare(a.created_at);
-      })
-      .slice(0, 5);
-  }, [moneyOperations]);
-
-  const recentAdjustments = useMemo(() => {
-    return [...adjustmentOperations]
-      .sort((a, b) => {
-        const dateCompare = b.operation_date.localeCompare(a.operation_date);
-        if (dateCompare !== 0) return dateCompare;
-        return b.created_at.localeCompare(a.created_at);
-      })
-      .slice(0, 5);
-  }, [adjustmentOperations]);
+  const {
+    groupedFact,
+    totalFactAmount,
+    monthlyPlan,
+    currentMonthFact,
+    currentMonthDelta,
+    currentMonthRemaining,
+    currentMonthOver,
+    currentMonthStatusText,
+    plannedNow,
+    deviation,
+    recentMoneyOperations,
+    recentAdjustments,
+  } = useCapitalData({
+    operations,
+    plan,
+  });
 
   return (
     <div className="space-y-4">
@@ -244,128 +173,53 @@ export default function CapitalPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-3 md:grid-cols-2">
-        <section className="app-card">
-          <h2 className="app-card-title mb-4">Контроль месяца</h2>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <MonthControlCard
+          monthlyPlan={monthlyPlan}
+          currentMonthFact={currentMonthFact}
+          currentMonthDelta={currentMonthDelta}
+          currentMonthRemaining={currentMonthRemaining}
+          currentMonthOver={currentMonthOver}
+          currentMonthStatusText={currentMonthStatusText}
+          formatNumber={formatNumber}
+        />
 
-          <div className="space-y-2 text-[14px]">
-            <div className="flex items-center justify-between gap-4">
-              <span>План на месяц</span>
-              <b>{formatNumber(monthlyPlan)} ₽</b>
-            </div>
+        <CurrentCapitalCard
+          totalFactAmount={totalFactAmount}
+          formatNumber={formatNumber}
+        />
 
-            <div className="flex items-center justify-between gap-4">
-              <span>Внесено</span>
-              <b>{formatNumber(currentMonthFact)} ₽</b>
-            </div>
-
-            {currentMonthDelta < 0 ? (
-              <div className="flex items-center justify-between gap-4">
-                <span>Осталось до плана</span>
-                <b style={{ color: "#dc2626" }}>
-                  {formatNumber(currentMonthRemaining)} ₽
-                </b>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between gap-4">
-                <span>Перевыполнение</span>
-                <b style={{ color: "#16a34a" }}>
-                  +{formatNumber(currentMonthOver)} ₽
-                </b>
-              </div>
-            )}
-
-            <div
-              className="pt-2 text-[13px] font-medium"
-              style={{
-                color: currentMonthDelta < 0 ? "#dc2626" : "#16a34a",
-              }}
-            >
-              {currentMonthStatusText}
-            </div>
-          </div>
-        </section>
-
-        <section className="app-card">
-          <div className="app-text-small mb-2">Текущий капитал</div>
-          <div
-            className="text-[32px] leading-[36px] font-semibold"
-            style={{ color: totalFactAmount < 0 ? "#dc2626" : "var(--accent)" }}
-          >
-            {formatNumber(totalFactAmount)} ₽
-          </div>
-        </section>
-
-        <section className="app-card md:col-span-2 xl:col-span-1">
-          <h2 className="app-card-title mb-4">Общий прогресс по плану</h2>
-
-          <div className="space-y-2 text-[14px]">
-            <div className="flex items-center justify-between gap-4">
-              <span>Должно быть сейчас</span>
-              <b>{formatNumber(plannedNow)} ₽</b>
-            </div>
-
-            <div className="flex items-center justify-between gap-4">
-              <span>Фактически</span>
-              <b>{formatNumber(totalFactAmount)} ₽</b>
-            </div>
-
-            <div className="flex items-center justify-between gap-4">
-              <span>Отклонение</span>
-              <b style={{ color: deviation < 0 ? "#dc2626" : "#16a34a" }}>
-                {formatNumber(deviation)} ₽
-              </b>
-            </div>
-          </div>
-        </section>
+        <OverallProgressCard
+          plannedNow={plannedNow}
+          totalFactAmount={totalFactAmount}
+          deviation={deviation}
+          formatNumber={formatNumber}
+        />
       </div>
 
-      <section className="app-card">
-        <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
-          <div>
-            <h2 className="app-card-title">Добавить операцию</h2>
-            <div className="app-text-small mt-1">
-              Пополнение, вывод или переоценка активов
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-4 xl:grid-cols-2">
-          <ContributionForm
-            cardClass=""
-            commonInputClass="app-input"
-            selectClass="app-select"
-            categories={[...ASSET_CATEGORIES]}
-            actualContribution={actualContribution}
-            setActualContribution={setActualContribution}
-            contributionCategory={contributionCategory}
-            setContributionCategory={setContributionCategory}
-            contributionDate={contributionDate}
-            setContributionDate={setContributionDate}
-            contributionComment={contributionComment}
-            setContributionComment={setContributionComment}
-            operationType={operationType}
-            setOperationType={setOperationType}
-            onSave={saveContribution}
-          />
-
-          <AdjustmentForm
-            cardClass=""
-            commonInputClass="app-input"
-            selectClass="app-select"
-            categories={[...ASSET_CATEGORIES]}
-            amount={adjustmentAmount}
-            setAmount={setAdjustmentAmount}
-            category={adjustmentCategory}
-            setCategory={setAdjustmentCategory}
-            date={adjustmentDate}
-            setDate={setAdjustmentDate}
-            comment={adjustmentComment}
-            setComment={setAdjustmentComment}
-            onSave={saveAdjustment}
-          />
-        </div>
-      </section>
+      <OperationComposer
+        categories={[...ASSET_CATEGORIES]}
+        actualContribution={actualContribution}
+        setActualContribution={setActualContribution}
+        contributionCategory={contributionCategory}
+        setContributionCategory={setContributionCategory}
+        contributionDate={contributionDate}
+        setContributionDate={setContributionDate}
+        contributionComment={contributionComment}
+        setContributionComment={setContributionComment}
+        operationType={operationType}
+        setOperationType={setOperationType}
+        onSaveContribution={saveContribution}
+        adjustmentAmount={adjustmentAmount}
+        setAdjustmentAmount={setAdjustmentAmount}
+        adjustmentCategory={adjustmentCategory}
+        setAdjustmentCategory={setAdjustmentCategory}
+        adjustmentDate={adjustmentDate}
+        setAdjustmentDate={setAdjustmentDate}
+        adjustmentComment={adjustmentComment}
+        setAdjustmentComment={setAdjustmentComment}
+        onSaveAdjustment={saveAdjustment}
+      />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)]">
         <section className="app-card">
