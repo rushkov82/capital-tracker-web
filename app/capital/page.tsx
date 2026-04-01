@@ -148,37 +148,42 @@ export default function CapitalPage() {
     return getTotalFactAmount(groupedFact);
   }, [groupedFact]);
 
-  // ===== 🔥 ТЕКУЩИЙ МЕСЯЦ =====
-
   const currentMonthOperations = useMemo(() => {
     const now = new Date();
-    const y = now.getFullYear();
-    const m = now.getMonth();
+    const year = now.getFullYear();
+    const month = now.getMonth();
 
-    return operations.filter((op) => {
-      if (op.type === "adjustment") return false;
+    return operations.filter((operation) => {
+      if (operation.type === "adjustment") {
+        return false;
+      }
 
-      const d = new Date(op.operation_date);
-      return d.getFullYear() === y && d.getMonth() === m;
+      const operationDate = new Date(operation.operation_date);
+
+      return (
+        operationDate.getFullYear() === year &&
+        operationDate.getMonth() === month
+      );
     });
   }, [operations]);
 
   const currentMonthFact = useMemo(() => {
-    return currentMonthOperations.reduce((sum, op) => {
-      if (op.type === "expense") return sum - op.amount;
-      return sum + op.amount;
+    return currentMonthOperations.reduce((sum, operation) => {
+      if (operation.type === "expense") {
+        return sum - operation.amount;
+      }
+
+      return sum + operation.amount;
     }, 0);
   }, [currentMonthOperations]);
 
   const monthlyPlan = Number(plan?.monthlyContribution || 0);
   const currentMonthDeviation = currentMonthFact - monthlyPlan;
 
-  const statusText =
+  const currentMonthStatusText =
     currentMonthDeviation >= 0
       ? "Ты идёшь по плану"
       : "Ты отстаёшь от плана";
-
-  // ===== СТАРЫЙ БЛОК =====
 
   const plannedNow = useMemo(() => {
     if (!plan) return 0;
@@ -239,37 +244,159 @@ export default function CapitalPage() {
         </p>
       </div>
 
-      {/* 🔥 НОВЫЙ БЛОК */}
       <section className="app-card">
         <div className="app-text-small mb-2">Текущий месяц</div>
 
         <div className="space-y-2 text-[14px]">
-          <div className="flex justify-between">
+          <div className="flex items-center justify-between gap-4">
             <span>План</span>
             <b>{formatNumber(monthlyPlan)} ₽</b>
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex items-center justify-between gap-4">
             <span>Факт</span>
             <b>{formatNumber(currentMonthFact)} ₽</b>
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex items-center justify-between gap-4">
             <span>Отклонение</span>
-            <b style={{ color: currentMonthDeviation < 0 ? "#dc2626" : "#16a34a" }}>
+            <b
+              style={{
+                color: currentMonthDeviation < 0 ? "#dc2626" : "#16a34a",
+              }}
+            >
               {formatNumber(currentMonthDeviation)} ₽
             </b>
           </div>
 
           <div
-            className="pt-2 text-[13px]"
+            className="pt-2 text-[13px] font-medium"
             style={{
               color: currentMonthDeviation < 0 ? "#dc2626" : "#16a34a",
             }}
           >
-            {statusText}
+            {currentMonthStatusText}
           </div>
         </div>
       </section>
 
-      {/* остальной код ниже не меняем */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <section className="app-card">
+          <div className="app-text-small mb-1">Текущий капитал</div>
+          <div
+            className="text-[28px] leading-[32px] font-semibold"
+            style={{ color: totalFactAmount < 0 ? "#dc2626" : "var(--accent)" }}
+          >
+            {formatNumber(totalFactAmount)} ₽
+          </div>
+        </section>
+
+        <section className="app-card">
+          <div className="app-text-small mb-2">План vs факт</div>
+
+          <div className="space-y-2 text-[14px]">
+            <div className="flex items-center justify-between gap-4">
+              <span>План</span>
+              <b>{formatNumber(plannedNow)} ₽</b>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <span>Факт</span>
+              <b>{formatNumber(totalFactAmount)} ₽</b>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <span>Отклонение</span>
+              <b style={{ color: deviation < 0 ? "#dc2626" : "#16a34a" }}>
+                {formatNumber(deviation)} ₽
+              </b>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <ContributionForm
+          cardClass="app-card"
+          commonInputClass="app-input"
+          selectClass="app-select"
+          categories={[...ASSET_CATEGORIES]}
+          actualContribution={actualContribution}
+          setActualContribution={setActualContribution}
+          contributionCategory={contributionCategory}
+          setContributionCategory={setContributionCategory}
+          contributionDate={contributionDate}
+          setContributionDate={setContributionDate}
+          contributionComment={contributionComment}
+          setContributionComment={setContributionComment}
+          operationType={operationType}
+          setOperationType={setOperationType}
+          onSave={saveContribution}
+        />
+
+        <AdjustmentForm
+          cardClass="app-card"
+          commonInputClass="app-input"
+          selectClass="app-select"
+          categories={[...ASSET_CATEGORIES]}
+          amount={adjustmentAmount}
+          setAmount={setAdjustmentAmount}
+          category={adjustmentCategory}
+          setCategory={setAdjustmentCategory}
+          date={adjustmentDate}
+          setDate={setAdjustmentDate}
+          comment={adjustmentComment}
+          setComment={setAdjustmentComment}
+          onSave={saveAdjustment}
+        />
+      </div>
+
+      <section className="app-card">
+        <h2 className="app-card-title mb-4">История пополнений и выводов</h2>
+
+        <OperationsList
+          cardClass=""
+          operations={recentMoneyOperations}
+          categories={[...ASSET_CATEGORIES]}
+          formatNumber={formatNumber}
+          onReload={loadOperations}
+        />
+
+        <div className="border-t border-[var(--border)] mt-4 pt-3">
+          <div className="flex justify-end">
+            <Link href="/history" className="app-button">
+              Все операции →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="app-card">
+        <h2 className="app-card-title mb-2">Корректировка стоимости</h2>
+        <div className="app-text-small mb-4">
+          История изменений стоимости активов
+        </div>
+
+        <OperationsList
+          cardClass=""
+          operations={recentAdjustments}
+          categories={[...ASSET_CATEGORIES]}
+          formatNumber={formatNumber}
+          onReload={loadOperations}
+        />
+      </section>
+
+      <FactDistribution
+        cardClass="app-card"
+        items={groupedFact}
+        totalAmount={totalFactAmount}
+        formatNumber={formatNumber}
+        formatPercent={formatPercent}
+      />
+    </div>
+  );
+}
+
+function todayString() {
+  return new Date().toISOString().slice(0, 10);
+}
