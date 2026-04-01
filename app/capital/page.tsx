@@ -109,7 +109,7 @@ export default function CapitalPage() {
     if (!amount || Number.isNaN(amount)) {
       showToast({
         type: "error",
-        title: "Не удалось сохранить корректировку",
+        title: "Не удалось сохранить переоценку",
         description: "Введите корректную сумму",
       });
       return;
@@ -133,7 +133,7 @@ export default function CapitalPage() {
     } catch (error) {
       showToast({
         type: "error",
-        title: "Не удалось сохранить корректировку",
+        title: "Не удалось сохранить переоценку",
         description:
           error instanceof Error ? error.message : "Ошибка сохранения",
       });
@@ -178,12 +178,12 @@ export default function CapitalPage() {
   }, [currentMonthOperations]);
 
   const monthlyPlan = Number(plan?.monthlyContribution || 0);
-  const currentMonthDeviation = currentMonthFact - monthlyPlan;
+  const currentMonthDelta = currentMonthFact - monthlyPlan;
+  const currentMonthRemaining = Math.max(0, monthlyPlan - currentMonthFact);
+  const currentMonthOver = Math.max(0, currentMonthFact - monthlyPlan);
 
   const currentMonthStatusText =
-    currentMonthDeviation >= 0
-      ? "Ты идёшь по плану"
-      : "Ты отстаёшь от плана";
+    currentMonthDelta >= 0 ? "Ты идёшь по плану" : "Ты отстаёшь от плана";
 
   const plannedNow = useMemo(() => {
     if (!plan) return 0;
@@ -240,39 +240,44 @@ export default function CapitalPage() {
       <div>
         <h1 className="app-page-title">Капитал</h1>
         <p className="app-page-subtitle">
-          Реальные деньги, история взносов и текущая структура
+          Реальные деньги, история операций и текущее состояние капитала
         </p>
       </div>
 
       <section className="app-card">
-        <div className="app-text-small mb-2">Текущий месяц</div>
+        <h2 className="app-card-title mb-4">Контроль месяца</h2>
 
         <div className="space-y-2 text-[14px]">
           <div className="flex items-center justify-between gap-4">
-            <span>План</span>
+            <span>План на месяц</span>
             <b>{formatNumber(monthlyPlan)} ₽</b>
           </div>
 
           <div className="flex items-center justify-between gap-4">
-            <span>Факт</span>
+            <span>Внесено</span>
             <b>{formatNumber(currentMonthFact)} ₽</b>
           </div>
 
-          <div className="flex items-center justify-between gap-4">
-            <span>Отклонение</span>
-            <b
-              style={{
-                color: currentMonthDeviation < 0 ? "#dc2626" : "#16a34a",
-              }}
-            >
-              {formatNumber(currentMonthDeviation)} ₽
-            </b>
-          </div>
+          {currentMonthDelta < 0 ? (
+            <div className="flex items-center justify-between gap-4">
+              <span>Осталось до плана</span>
+              <b style={{ color: "#dc2626" }}>
+                {formatNumber(currentMonthRemaining)} ₽
+              </b>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-4">
+              <span>Перевыполнение</span>
+              <b style={{ color: "#16a34a" }}>
+                +{formatNumber(currentMonthOver)} ₽
+              </b>
+            </div>
+          )}
 
           <div
             className="pt-2 text-[13px] font-medium"
             style={{
-              color: currentMonthDeviation < 0 ? "#dc2626" : "#16a34a",
+              color: currentMonthDelta < 0 ? "#dc2626" : "#16a34a",
             }}
           >
             {currentMonthStatusText}
@@ -280,79 +285,81 @@ export default function CapitalPage() {
         </div>
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="app-card">
-          <div className="app-text-small mb-1">Текущий капитал</div>
-          <div
-            className="text-[28px] leading-[32px] font-semibold"
-            style={{ color: totalFactAmount < 0 ? "#dc2626" : "var(--accent)" }}
-          >
-            {formatNumber(totalFactAmount)} ₽
-          </div>
-        </section>
-
-        <section className="app-card">
-          <div className="app-text-small mb-2">План vs факт</div>
-
-          <div className="space-y-2 text-[14px]">
-            <div className="flex items-center justify-between gap-4">
-              <span>План</span>
-              <b>{formatNumber(plannedNow)} ₽</b>
-            </div>
-
-            <div className="flex items-center justify-between gap-4">
-              <span>Факт</span>
-              <b>{formatNumber(totalFactAmount)} ₽</b>
-            </div>
-
-            <div className="flex items-center justify-between gap-4">
-              <span>Отклонение</span>
-              <b style={{ color: deviation < 0 ? "#dc2626" : "#16a34a" }}>
-                {formatNumber(deviation)} ₽
-              </b>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-2">
-        <ContributionForm
-          cardClass="app-card"
-          commonInputClass="app-input"
-          selectClass="app-select"
-          categories={[...ASSET_CATEGORIES]}
-          actualContribution={actualContribution}
-          setActualContribution={setActualContribution}
-          contributionCategory={contributionCategory}
-          setContributionCategory={setContributionCategory}
-          contributionDate={contributionDate}
-          setContributionDate={setContributionDate}
-          contributionComment={contributionComment}
-          setContributionComment={setContributionComment}
-          operationType={operationType}
-          setOperationType={setOperationType}
-          onSave={saveContribution}
-        />
-
-        <AdjustmentForm
-          cardClass="app-card"
-          commonInputClass="app-input"
-          selectClass="app-select"
-          categories={[...ASSET_CATEGORIES]}
-          amount={adjustmentAmount}
-          setAmount={setAdjustmentAmount}
-          category={adjustmentCategory}
-          setCategory={setAdjustmentCategory}
-          date={adjustmentDate}
-          setDate={setAdjustmentDate}
-          comment={adjustmentComment}
-          setComment={setAdjustmentComment}
-          onSave={saveAdjustment}
-        />
-      </div>
+      <section className="app-card">
+        <div className="app-text-small mb-1">Текущий капитал</div>
+        <div
+          className="text-[28px] leading-[32px] font-semibold"
+          style={{ color: totalFactAmount < 0 ? "#dc2626" : "var(--accent)" }}
+        >
+          {formatNumber(totalFactAmount)} ₽
+        </div>
+      </section>
 
       <section className="app-card">
-        <h2 className="app-card-title mb-4">История пополнений и выводов</h2>
+        <h2 className="app-card-title mb-4">Общий прогресс по плану</h2>
+
+        <div className="space-y-2 text-[14px]">
+          <div className="flex items-center justify-between gap-4">
+            <span>Должно быть сейчас</span>
+            <b>{formatNumber(plannedNow)} ₽</b>
+          </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <span>Фактически</span>
+            <b>{formatNumber(totalFactAmount)} ₽</b>
+          </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <span>Отклонение</span>
+            <b style={{ color: deviation < 0 ? "#dc2626" : "#16a34a" }}>
+              {formatNumber(deviation)} ₽
+            </b>
+          </div>
+        </div>
+      </section>
+
+      <section className="app-card">
+        <h2 className="app-card-title mb-4">Добавить операцию</h2>
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          <ContributionForm
+            cardClass=""
+            commonInputClass="app-input"
+            selectClass="app-select"
+            categories={[...ASSET_CATEGORIES]}
+            actualContribution={actualContribution}
+            setActualContribution={setActualContribution}
+            contributionCategory={contributionCategory}
+            setContributionCategory={setContributionCategory}
+            contributionDate={contributionDate}
+            setContributionDate={setContributionDate}
+            contributionComment={contributionComment}
+            setContributionComment={setContributionComment}
+            operationType={operationType}
+            setOperationType={setOperationType}
+            onSave={saveContribution}
+          />
+
+          <AdjustmentForm
+            cardClass=""
+            commonInputClass="app-input"
+            selectClass="app-select"
+            categories={[...ASSET_CATEGORIES]}
+            amount={adjustmentAmount}
+            setAmount={setAdjustmentAmount}
+            category={adjustmentCategory}
+            setCategory={setAdjustmentCategory}
+            date={adjustmentDate}
+            setDate={setAdjustmentDate}
+            comment={adjustmentComment}
+            setComment={setAdjustmentComment}
+            onSave={saveAdjustment}
+          />
+        </div>
+      </section>
+
+      <section className="app-card">
+        <h2 className="app-card-title mb-4">Последние операции</h2>
 
         <OperationsList
           cardClass=""
@@ -372,10 +379,8 @@ export default function CapitalPage() {
       </section>
 
       <section className="app-card">
-        <h2 className="app-card-title mb-2">Корректировка стоимости</h2>
-        <div className="app-text-small mb-4">
-          История изменений стоимости активов
-        </div>
+        <h2 className="app-card-title mb-2">Переоценка активов</h2>
+        <div className="app-text-small mb-4">История изменений стоимости</div>
 
         <OperationsList
           cardClass=""
@@ -388,6 +393,8 @@ export default function CapitalPage() {
 
       <FactDistribution
         cardClass="app-card"
+        title="Баланс операций"
+        subtitle="Пополнения, выводы и переоценки в текущем капитале"
         items={groupedFact}
         totalAmount={totalFactAmount}
         formatNumber={formatNumber}

@@ -40,9 +40,7 @@ export default function ContributionForm({
 
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-4">
-        {isIncome ? "Сделать взнос" : "Вывод средств"}
-      </h2>
+      <h3 className="app-card-title mb-4">Пополнение или вывод</h3>
 
       <div className="space-y-3">
         <div className="space-y-2">
@@ -64,7 +62,10 @@ export default function ContributionForm({
           )}
         </div>
 
-        <FormRow label={isIncome ? "Сумма пополнения" : "Сумма вывода"} hint="₽">
+        <FormRow
+          label={isIncome ? "Сумма пополнения" : "Сумма вывода"}
+          hint="₽"
+        >
           <input
             className={commonInputClass}
             value={actualContribution}

@@ -31,14 +31,14 @@ export default function AdjustmentForm({
 }: AdjustmentFormProps) {
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-2">Корректировка капитала</h2>
+      <h3 className="app-card-title mb-2">Переоценка</h3>
 
       <div className="app-text-small mb-3">
         Учёт изменения стоимости активов
       </div>
 
       <div className="space-y-3">
-        <FormRow label="Сумма корректировки" hint="₽">
+        <FormRow label="Сумма переоценки" hint="₽">
           <input
             className={commonInputClass}
             value={amount}
@@ -81,7 +81,7 @@ export default function AdjustmentForm({
 
         <div className="flex justify-end pt-2">
           <button onClick={onSave} className="app-button">
-            Добавить корректировку
+            Сохранить
           </button>
         </div>
       </div>

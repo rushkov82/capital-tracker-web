@@ -5,6 +5,8 @@ type FactDistributionItem = {
 
 type FactDistributionProps = {
   cardClass: string;
+  title?: string;
+  subtitle?: string;
   items: FactDistributionItem[];
   totalAmount: number;
   formatNumber: (value: number) => string;
@@ -13,6 +15,8 @@ type FactDistributionProps = {
 
 export default function FactDistribution({
   cardClass,
+  title = "Структура капитала",
+  subtitle,
   items,
   totalAmount,
   formatNumber,
@@ -22,7 +26,9 @@ export default function FactDistribution({
 
   return (
     <section className={cardClass}>
-      <h2 className="app-card-title mb-4">Структура капитала</h2>
+      <h2 className="app-card-title mb-2">{title}</h2>
+
+      {subtitle ? <div className="app-text-small mb-4">{subtitle}</div> : null}
 
       <div className="border-t border-[var(--border)] pt-3">
         <div className="grid grid-cols-[1.2fr_0.8fr_1fr] gap-3 pb-2">
