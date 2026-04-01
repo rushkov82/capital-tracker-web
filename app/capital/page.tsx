@@ -146,6 +146,20 @@ export default function CapitalPage() {
     }
   }
 
+  function fillInitialCapital() {
+    if (!plan) return;
+
+    setActualContribution(plan.initialCapital || "");
+    setContributionCategory(ASSET_CATEGORIES[0]);
+    setContributionDate(todayString());
+    setContributionComment("Старт капитала");
+    setOperationType("income");
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  const hasAnyOperations = operations.length > 0;
+
   const {
     groupedFact,
     totalFactAmount,
@@ -172,6 +186,31 @@ export default function CapitalPage() {
           Реальные деньги, история операций и текущее состояние капитала
         </p>
       </div>
+
+      {!hasAnyOperations && (
+        <section className="app-card border border-[#2563eb]">
+          <div className="space-y-3">
+            <div className="app-card-title">
+              Начни с фиксации текущего капитала
+            </div>
+
+            <div className="app-text-small">
+              Ты уже создал план. Теперь зафиксируй реальные деньги,
+              которые у тебя есть сейчас.
+            </div>
+
+            <div className="app-text-small">
+              Добавь одну операцию — это будет старт системы.
+            </div>
+
+            <div className="pt-2">
+              <button onClick={fillInitialCapital} className="app-button">
+                Добавить стартовый капитал
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <MonthControlCard
@@ -261,7 +300,7 @@ export default function CapitalPage() {
           <FactDistribution
             cardClass="app-card"
             title="Баланс операций"
-            subtitle="Пополнения, выводы и переоценки в текущем капитале"
+            subtitle="Пополнения, выводы и переоценки"
             items={groupedFact}
             totalAmount={totalFactAmount}
             formatNumber={formatNumber}
