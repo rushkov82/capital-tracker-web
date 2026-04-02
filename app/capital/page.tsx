@@ -1,150 +1,152 @@
-// 👇 ВАЖНО: тут просто убрано условие !hasAnyOperations
-
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ASSET_CATEGORIES } from "@/lib/constants";
+import { useEffect, useMemo, useState } from "react";
 import {
   createOperation,
   fetchOperations,
   type Operation,
 } from "@/lib/operations";
-import {
-  fetchPlanSettings,
-  type PlanSettings,
-} from "@/lib/plan";
-import { formatNumber, formatPercent } from "@/lib/calculations";
 import { showToast } from "@/lib/toast";
-import OperationsList from "@/components/OperationsList";
-import FactDistribution from "@/components/FactDistribution";
-import MonthControlCard from "@/components/capital/MonthControlCard";
-import CurrentCapitalCard from "@/components/capital/CurrentCapitalCard";
-import OverallProgressCard from "@/components/capital/OverallProgressCard";
-import OperationComposer from "@/components/capital/OperationComposer";
-import { useCapitalData } from "@/lib/hooks/useCapitalData";
+import CapitalHeaderCard from "@/components/capital/CapitalHeaderCard";
+import CapitalStructureCard from "@/components/capital/CapitalStructureCard";
+import CapitalActionsCard from "@/components/capital/CapitalActionsCard";
+import CapitalRecentOperationsCard from "@/components/capital/CapitalRecentOperationsCard";
+import CapitalHistoryCard from "@/components/capital/CapitalHistoryCard";
+
+type ActionType = "income" | "expense" | "adjustment";
+
+type StructureItem = {
+  category: string;
+  amount: number;
+};
 
 export default function CapitalPage() {
   const [operations, setOperations] = useState<Operation[]>([]);
-  const [plan, setPlan] = useState<PlanSettings | null>(null);
-
-  const [actualContribution, setActualContribution] = useState("");
-  const [contributionComment, setContributionComment] = useState("");
-  const [contributionDate, setContributionDate] = useState(todayString());
-  const [contributionCategory, setContributionCategory] = useState<string>(
-    ASSET_CATEGORIES[0]
-  );
-  const [operationType, setOperationType] = useState<"income" | "expense">(
-    "income"
-  );
-
-  const [adjustmentAmount, setAdjustmentAmount] = useState("");
-  const [adjustmentCategory, setAdjustmentCategory] = useState<string>(
-    ASSET_CATEGORIES[0]
-  );
-  const [adjustmentComment, setAdjustmentComment] = useState("");
-  const [adjustmentDate, setAdjustmentDate] = useState(todayString());
+  const [amount, setAmount] = useState("");
+  const [actionType, setActionType] = useState<ActionType>("income");
 
   useEffect(() => {
     void loadOperations();
-    void loadPlan();
   }, []);
 
-  async function loadPlan() {
-    const data = await fetchPlanSettings();
-    setPlan(data);
-  }
-
   async function loadOperations() {
-    const data = await fetchOperations();
-    setOperations(data);
+    try {
+      const data = await fetchOperations();
+      setOperations(data);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Ошибка",
+        description: "Не удалось загрузить операции",
+      });
+    }
   }
 
-  async function saveContribution() {
-    const amount = Number(actualContribution);
+  async function handleSubmit() {
+    const value = Number(amount);
 
-    await createOperation({
-      amount,
-      comment: contributionComment,
-      operation_date: contributionDate,
-      asset_category: contributionCategory,
-      type: operationType,
+    if (!value || Number.isNaN(value)) {
+      showToast({
+        type: "error",
+        title: "Ошибка",
+        description: "Введите корректную сумму",
+      });
+      return;
+    }
+
+    try {
+      await createOperation({
+        amount: Math.abs(value),
+        type: actionType,
+      });
+
+      setAmount("");
+      await loadOperations();
+    } catch {
+      showToast({
+        type: "error",
+        title: "Ошибка",
+        description: "Не удалось сохранить операцию",
+      });
+    }
+  }
+
+  const totalCapital = useMemo(() => {
+    return operations.reduce((sum, operation) => {
+      if (operation.type === "expense") return sum - operation.amount;
+      return sum + operation.amount;
+    }, 0);
+  }, [operations]);
+
+  const structureItems = useMemo<StructureItem[]>(() => {
+    const grouped = new Map<string, number>();
+
+    for (const operation of operations) {
+      const category = operation.asset_category || "Без категории";
+
+      const signedAmount =
+        operation.type === "expense"
+          ? -operation.amount
+          : operation.amount;
+
+      grouped.set(category, (grouped.get(category) || 0) + signedAmount);
+    }
+
+    return Array.from(grouped.entries())
+      .map(([category, amount]) => ({
+        category,
+        amount,
+      }))
+      .filter((item) => item.amount !== 0)
+      .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+  }, [operations]);
+
+  const recentOperations = useMemo(() => {
+    return [...operations]
+      .sort((a, b) => {
+        const dateCompare = b.operation_date.localeCompare(a.operation_date);
+        if (dateCompare !== 0) return dateCompare;
+        return b.created_at.localeCompare(a.created_at);
+      })
+      .slice(0, 5);
+  }, [operations]);
+
+  const sortedOperations = useMemo(() => {
+    return [...operations].sort((a, b) => {
+      const dateCompare = b.operation_date.localeCompare(a.operation_date);
+      if (dateCompare !== 0) return dateCompare;
+      return b.created_at.localeCompare(a.created_at);
     });
-
-    setActualContribution("");
-    await loadOperations();
-  }
-
-  function fillInitialCapital() {
-    if (!plan) return;
-
-    setActualContribution(plan.initialCapital || "");
-    setContributionCategory(ASSET_CATEGORIES[0]);
-    setContributionDate(todayString());
-    setContributionComment("Старт капитала");
-    setOperationType("income");
-  }
-
-  const {
-    groupedFact,
-    totalFactAmount,
-    monthlyPlan,
-    currentMonthFact,
-    currentMonthDelta,
-    currentMonthRemaining,
-    currentMonthOver,
-    currentMonthStatusText,
-    plannedNow,
-    deviation,
-    recentMoneyOperations,
-    recentAdjustments,
-  } = useCapitalData({
-    operations,
-    plan,
-  });
+  }, [operations]);
 
   return (
     <div className="space-y-4">
-      <h1 className="app-page-title">Капитал</h1>
+      <div>
+        <h1 className="app-page-title">Капитал</h1>
+        <p className="app-page-subtitle">
+          Что у тебя есть сейчас и что ты реально делаешь с деньгами
+        </p>
+      </div>
 
-      {/* ВСЕГДА ПОКАЗЫВАЕМ */}
-      <section className="app-card border border-[#2563eb]">
-        <div className="space-y-3">
-          <div className="app-card-title">
-            Начни с фиксации текущего капитала
-          </div>
+      <CapitalHeaderCard totalCapital={totalCapital} />
 
-          <button onClick={fillInitialCapital} className="app-button">
-            Добавить стартовый капитал
-          </button>
-        </div>
-      </section>
-
-      <MonthControlCard
-        monthlyPlan={monthlyPlan}
-        currentMonthFact={currentMonthFact}
-        currentMonthDelta={currentMonthDelta}
-        currentMonthRemaining={currentMonthRemaining}
-        currentMonthOver={currentMonthOver}
-        currentMonthStatusText={currentMonthStatusText}
-        formatNumber={formatNumber}
+      <CapitalStructureCard
+        items={structureItems}
+        totalCapital={totalCapital}
       />
 
-      <CurrentCapitalCard
-        totalFactAmount={totalFactAmount}
-        formatNumber={formatNumber}
+      <CapitalActionsCard
+        amount={amount}
+        setAmount={setAmount}
+        actionType={actionType}
+        setActionType={setActionType}
+        onSubmit={handleSubmit}
       />
 
-      <OverallProgressCard
-        plannedNow={plannedNow}
-        totalFactAmount={totalFactAmount}
-        deviation={deviation}
-        formatNumber={formatNumber}
-      />
+      <div className="grid gap-4 xl:grid-cols-2">
+        <CapitalRecentOperationsCard operations={recentOperations} />
+        <CapitalHistoryCard operations={sortedOperations} />
+      </div>
     </div>
   );
-}
-
-function todayString() {
-  return new Date().toISOString().slice(0, 10);
 }

@@ -7,6 +7,7 @@ const navItems = [
   { href: "/", label: "Обзор" },
   { href: "/strategy", label: "Стратегия" },
   { href: "/capital", label: "Капитал" },
+  { href: "/progress", label: "Прогресс" },
 ];
 
 export default function AppShell({

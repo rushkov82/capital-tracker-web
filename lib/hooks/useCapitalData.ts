@@ -54,26 +54,6 @@ export function useCapitalData({ operations, plan }: UseCapitalDataInput) {
   const currentMonthStatusText =
     currentMonthDelta >= 0 ? "Ты идёшь по плану" : "Ты отстаёшь от плана";
 
-  const plannedNow = useMemo(() => {
-    if (!plan) return 0;
-
-    const start = Number(plan.initialCapital || 0);
-    const monthly = Number(plan.monthlyContribution || 0);
-
-    const startDate = new Date(plan.planStartDate);
-    const now = new Date();
-
-    const months =
-      (now.getFullYear() - startDate.getFullYear()) * 12 +
-      (now.getMonth() - startDate.getMonth());
-
-    const safeMonths = Math.max(0, months);
-
-    return start + safeMonths * monthly;
-  }, [plan]);
-
-  const deviation = totalFactAmount - plannedNow;
-
   const moneyOperations = useMemo(() => {
     return operations.filter(
       (operation) => operation.type === "income" || operation.type === "expense"
@@ -113,8 +93,6 @@ export function useCapitalData({ operations, plan }: UseCapitalDataInput) {
     currentMonthRemaining,
     currentMonthOver,
     currentMonthStatusText,
-    plannedNow,
-    deviation,
     recentMoneyOperations,
     recentAdjustments,
   };

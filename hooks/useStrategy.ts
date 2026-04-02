@@ -15,9 +15,6 @@ import {
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 export function useStrategy() {
-  const [initialCapital, setInitialCapital] = useState(
-    DEFAULT_PLAN_SETTINGS.initialCapital
-  );
   const [monthlyContribution, setMonthlyContribution] = useState(
     DEFAULT_PLAN_SETTINGS.monthlyContribution
   );
@@ -31,45 +28,6 @@ export function useStrategy() {
 
   const [planStartDate, setPlanStartDate] = useState(
     DEFAULT_PLAN_SETTINGS.planStartDate
-  );
-
-  const [stocksBondsShare, setStocksBondsShare] = useState(
-    DEFAULT_PLAN_SETTINGS.stocksBondsShare
-  );
-  const [stocksBondsReturn, setStocksBondsReturn] = useState(
-    DEFAULT_PLAN_SETTINGS.stocksBondsReturn
-  );
-
-  const [rubCashShare, setRubCashShare] = useState(
-    DEFAULT_PLAN_SETTINGS.rubCashShare
-  );
-  const [rubCashReturn, setRubCashReturn] = useState(
-    DEFAULT_PLAN_SETTINGS.rubCashReturn
-  );
-
-  const [metalsShare, setMetalsShare] = useState(
-    DEFAULT_PLAN_SETTINGS.metalsShare
-  );
-  const [metalsReturn, setMetalsReturn] = useState(
-    DEFAULT_PLAN_SETTINGS.metalsReturn
-  );
-
-  const [realEstateShare, setRealEstateShare] = useState(
-    DEFAULT_PLAN_SETTINGS.realEstateShare
-  );
-  const [realEstateReturn, setRealEstateReturn] = useState(
-    DEFAULT_PLAN_SETTINGS.realEstateReturn
-  );
-
-  const [currencyShare, setCurrencyShare] = useState(
-    DEFAULT_PLAN_SETTINGS.currencyShare
-  );
-  const [currencyReturn, setCurrencyReturn] = useState(
-    DEFAULT_PLAN_SETTINGS.currencyReturn
-  );
-
-  const [otherReturn, setOtherReturn] = useState(
-    DEFAULT_PLAN_SETTINGS.otherReturn
   );
 
   const [portfolioResult, setPortfolioResult] = useState("-");
@@ -89,32 +47,14 @@ export function useStrategy() {
         const saved = await fetchPlanSettings();
         if (!active) return;
 
-        setInitialCapital(saved.initialCapital);
         setMonthlyContribution(saved.monthlyContribution);
         setInflation(saved.inflation);
         setContributionGrowth(saved.contributionGrowth);
         setYears(saved.years);
         setPlanStartDate(saved.planStartDate);
 
-        setStocksBondsShare(saved.stocksBondsShare);
-        setStocksBondsReturn(saved.stocksBondsReturn);
-
-        setRubCashShare(saved.rubCashShare);
-        setRubCashReturn(saved.rubCashReturn);
-
-        setMetalsShare(saved.metalsShare);
-        setMetalsReturn(saved.metalsReturn);
-
-        setRealEstateShare(saved.realEstateShare);
-        setRealEstateReturn(saved.realEstateReturn);
-
-        setCurrencyShare(saved.currencyShare);
-        setCurrencyReturn(saved.currencyReturn);
-
-        setOtherReturn(saved.otherReturn);
-
         hasLoadedRef.current = true;
-      } catch (error) {
+      } catch {
         if (!active) return;
         setErrorText("Ошибка загрузки стратегии");
         hasLoadedRef.current = true;
@@ -135,23 +75,12 @@ export function useStrategy() {
 
     const timeout = window.setTimeout(() => {
       void upsertPlanSettings({
-        initialCapital,
+        ...DEFAULT_PLAN_SETTINGS,
         monthlyContribution,
         inflation,
         contributionGrowth,
         years,
         planStartDate,
-        stocksBondsShare,
-        stocksBondsReturn,
-        rubCashShare,
-        rubCashReturn,
-        metalsShare,
-        metalsReturn,
-        realEstateShare,
-        realEstateReturn,
-        currencyShare,
-        currencyReturn,
-        otherReturn,
       })
         .then(() => {
           setSaveStatus("saved");
@@ -164,71 +93,37 @@ export function useStrategy() {
 
     return () => window.clearTimeout(timeout);
   }, [
-    initialCapital,
     monthlyContribution,
     inflation,
     contributionGrowth,
     years,
     planStartDate,
-    stocksBondsShare,
-    stocksBondsReturn,
-    rubCashShare,
-    rubCashReturn,
-    metalsShare,
-    metalsReturn,
-    realEstateShare,
-    realEstateReturn,
-    currencyShare,
-    currencyReturn,
-    otherReturn,
   ]);
-
-  const totalManualShare = useMemo(() => {
-    return (
-      (Number(stocksBondsShare) || 0) +
-      (Number(rubCashShare) || 0) +
-      (Number(metalsShare) || 0) +
-      (Number(realEstateShare) || 0) +
-      (Number(currencyShare) || 0)
-    );
-  }, [
-    stocksBondsShare,
-    rubCashShare,
-    metalsShare,
-    realEstateShare,
-    currencyShare,
-  ]);
-
-  const otherShare = useMemo(() => {
-    return 100 - totalManualShare;
-  }, [totalManualShare]);
 
   useEffect(() => {
     if (!hasLoadedRef.current) return;
 
     const result = calculateCapital({
-      initialCapital,
+      initialCapital: "0",
       monthlyContribution,
       inflation,
       contributionGrowth,
       years,
-      stocksBondsShare,
-      stocksBondsReturn,
-      rubCashShare,
-      rubCashReturn,
-      metalsShare,
-      metalsReturn,
-      realEstateShare,
-      realEstateReturn,
-      currencyShare,
-      currencyReturn,
-      otherReturn,
+
+      stocksBondsShare: "0",
+      stocksBondsReturn: "0",
+      rubCashShare: "0",
+      rubCashReturn: "0",
+      metalsShare: "0",
+      metalsReturn: "0",
+      realEstateShare: "0",
+      realEstateReturn: "0",
+      currencyShare: "0",
+      currencyReturn: "0",
+      otherReturn: "0",
     });
 
     if (!result.success) {
-      setPortfolioResult("-");
-      setNominalResult("-");
-      setRealResult("-");
       setErrorText(result.error);
       return;
     }
@@ -237,42 +132,9 @@ export function useStrategy() {
     setPortfolioResult(`${formatPercent(result.portfolioRatePercent)} %`);
     setNominalResult(`${formatNumber(result.nominalCapital)} ₽`);
     setRealResult(`${formatNumber(result.realCapital)} ₽`);
-  }, [
-    initialCapital,
-    monthlyContribution,
-    inflation,
-    contributionGrowth,
-    years,
-    stocksBondsShare,
-    stocksBondsReturn,
-    rubCashShare,
-    rubCashReturn,
-    metalsShare,
-    metalsReturn,
-    realEstateShare,
-    realEstateReturn,
-    currencyShare,
-    currencyReturn,
-    otherReturn,
-  ]);
-
-  function getSaveStatusText() {
-    if (saveStatus === "saving") return "Сохраняем...";
-    if (saveStatus === "saved") return "Сохранено";
-    if (saveStatus === "error") return "Ошибка";
-    return "";
-  }
-
-  function getSaveStatusColor() {
-    if (saveStatus === "saving") return "#9ca3af";
-    if (saveStatus === "saved") return "#16a34a";
-    if (saveStatus === "error") return "#dc2626";
-    return "#9ca3af";
-  }
+  }, [monthlyContribution, inflation, contributionGrowth, years]);
 
   return {
-    initialCapital,
-    setInitialCapital,
     monthlyContribution,
     setMonthlyContribution,
     inflation,
@@ -284,44 +146,11 @@ export function useStrategy() {
     planStartDate,
     setPlanStartDate,
 
-    stocksBondsShare,
-    setStocksBondsShare,
-    stocksBondsReturn,
-    setStocksBondsReturn,
-
-    rubCashShare,
-    setRubCashShare,
-    rubCashReturn,
-    setRubCashReturn,
-
-    metalsShare,
-    setMetalsShare,
-    metalsReturn,
-    setMetalsReturn,
-
-    realEstateShare,
-    setRealEstateShare,
-    realEstateReturn,
-    setRealEstateReturn,
-
-    currencyShare,
-    setCurrencyShare,
-    currencyReturn,
-    setCurrencyReturn,
-
-    otherShare,
-    otherReturn,
-    setOtherReturn,
-
-    totalManualShare,
-
     portfolioResult,
     nominalResult,
     realResult,
     errorText,
 
     saveStatus,
-    getSaveStatusText,
-    getSaveStatusColor,
   };
 }

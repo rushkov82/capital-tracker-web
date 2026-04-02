@@ -2,7 +2,6 @@ export const PLAN_STORAGE_KEY = "capital_plan_settings";
 export const PLAN_UPDATED_EVENT = "capital-plan-updated";
 
 export type PlanSettings = {
-  initialCapital: string;
   monthlyContribution: string;
   inflation: string;
   contributionGrowth: string;
@@ -28,7 +27,6 @@ export type PlanSettings = {
 };
 
 export const DEFAULT_PLAN_SETTINGS: PlanSettings = {
-  initialCapital: "0",
   monthlyContribution: "50000",
   inflation: "9",
   contributionGrowth: "10",
@@ -53,6 +51,13 @@ export const DEFAULT_PLAN_SETTINGS: PlanSettings = {
   planStartDate: new Date().toISOString().slice(0, 10),
 };
 
+function isLocalMode() {
+  if (typeof window === "undefined") return false;
+
+  const host = window.location.hostname;
+  return host === "localhost" || host === "127.0.0.1";
+}
+
 async function parseResponse<T>(response: Response): Promise<T> {
   const data = await response.json();
 
@@ -63,7 +68,43 @@ async function parseResponse<T>(response: Response): Promise<T> {
   return data;
 }
 
+function readLocalPlan(): PlanSettings {
+  if (typeof window === "undefined") {
+    return DEFAULT_PLAN_SETTINGS;
+  }
+
+  const raw = window.localStorage.getItem(PLAN_STORAGE_KEY);
+
+  if (!raw) {
+    return DEFAULT_PLAN_SETTINGS;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<PlanSettings>;
+
+    return {
+      ...DEFAULT_PLAN_SETTINGS,
+      ...parsed,
+      planStartDate:
+        parsed.planStartDate || DEFAULT_PLAN_SETTINGS.planStartDate,
+    };
+  } catch {
+    return DEFAULT_PLAN_SETTINGS;
+  }
+}
+
+function writeLocalPlan(settings: PlanSettings) {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(settings));
+  window.dispatchEvent(new Event(PLAN_UPDATED_EVENT));
+}
+
 export async function fetchPlanSettings(): Promise<PlanSettings> {
+  if (isLocalMode()) {
+    return readLocalPlan();
+  }
+
   const response = await fetch("/api/plan", {
     method: "GET",
     cache: "no-store",
@@ -85,6 +126,11 @@ export async function fetchPlanSettings(): Promise<PlanSettings> {
 export async function upsertPlanSettings(
   settings: PlanSettings
 ): Promise<void> {
+  if (isLocalMode()) {
+    writeLocalPlan(settings);
+    return;
+  }
+
   const response = await fetch("/api/plan", {
     method: "POST",
     headers: {

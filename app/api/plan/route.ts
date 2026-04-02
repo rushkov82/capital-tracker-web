@@ -5,7 +5,6 @@ const DEFAULT_USER_ID = 1;
 
 function mapRow(row: any) {
   return {
-    initialCapital: String(row.initial_capital ?? "0"),
     monthlyContribution: String(row.monthly_contribution ?? "50000"),
     inflation: String(row.inflation ?? "9"),
     contributionGrowth: String(row.contribution_growth ?? "10"),
@@ -39,7 +38,6 @@ export async function GET() {
     const result = await query(
       `
       SELECT
-        initial_capital,
         monthly_contribution,
         inflation,
         contribution_growth,
@@ -89,7 +87,6 @@ export async function POST(request: Request) {
       `
       INSERT INTO plan_settings (
         user_id,
-        initial_capital,
         monthly_contribution,
         inflation,
         contribution_growth,
@@ -109,13 +106,12 @@ export async function POST(request: Request) {
         updated_at
       )
       VALUES (
-        $1,$2,$3,$4,$5,$6,
-        $7,$8,$9,$10,$11,$12,
-        $13,$14,$15,$16,$17,$18,NOW()
+        $1,$2,$3,$4,$5,
+        $6,$7,$8,$9,$10,$11,
+        $12,$13,$14,$15,$16,$17,NOW()
       )
       ON CONFLICT (user_id)
       DO UPDATE SET
-        initial_capital = EXCLUDED.initial_capital,
         monthly_contribution = EXCLUDED.monthly_contribution,
         inflation = EXCLUDED.inflation,
         contribution_growth = EXCLUDED.contribution_growth,
@@ -134,7 +130,6 @@ export async function POST(request: Request) {
         plan_start_date = EXCLUDED.plan_start_date,
         updated_at = NOW()
       RETURNING
-        initial_capital,
         monthly_contribution,
         inflation,
         contribution_growth,
@@ -154,7 +149,6 @@ export async function POST(request: Request) {
       `,
       [
         DEFAULT_USER_ID,
-        Number(body.initialCapital ?? 0),
         Number(body.monthlyContribution ?? 0),
         Number(body.inflation ?? 0),
         Number(body.contributionGrowth ?? 0),

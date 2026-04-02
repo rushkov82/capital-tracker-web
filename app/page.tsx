@@ -1,108 +1,129 @@
-import Link from "next/link";
-import AuthStatus from "@/components/AuthStatus";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import OverviewCards from "@/components/overview/OverviewCards";
+import OverviewMonthBlock from "@/components/overview/OverviewMonthBlock";
+import OverviewRecentActions from "@/components/overview/OverviewRecentActions";
+import OverviewAuthorNote from "@/components/overview/OverviewAuthorNote";
+import { fetchPlanSettings, type PlanSettings } from "@/lib/plan";
+import { fetchOperations, type Operation } from "@/lib/operations";
+import { formatNumber } from "@/lib/calculations";
 
 export default function OverviewPage() {
+  const [plan, setPlan] = useState<PlanSettings | null>(null);
+  const [operations, setOperations] = useState<Operation[]>([]);
+
+  useEffect(() => {
+    void loadData();
+  }, []);
+
+  async function loadData() {
+    const [planData, operationsData] = await Promise.all([
+      fetchPlanSettings(),
+      fetchOperations(),
+    ]);
+
+    setPlan(planData);
+    setOperations(operationsData);
+  }
+
+  const totalCapital = useMemo(() => {
+    return operations.reduce((sum, operation) => {
+      if (operation.type === "expense") return sum - operation.amount;
+      return sum + operation.amount;
+    }, 0);
+  }, [operations]);
+
+  const currentMonthFact = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    return operations
+      .filter((operation) => {
+        if (operation.type === "adjustment") return false;
+
+        const date = new Date(operation.operation_date);
+
+        return date.getFullYear() === year && date.getMonth() === month;
+      })
+      .reduce((sum, operation) => {
+        if (operation.type === "expense") return sum - operation.amount;
+        return sum + operation.amount;
+      }, 0);
+  }, [operations]);
+
+  const monthlyPlan = Number(plan?.monthlyContribution || 0);
+  const currentMonthDelta = currentMonthFact - monthlyPlan;
+  const remainingThisMonth =
+    currentMonthDelta >= 0
+      ? currentMonthDelta
+      : Math.max(0, monthlyPlan - currentMonthFact);
+
+  const monthStatusText =
+    currentMonthDelta >= 0
+      ? "Ты идёшь по плану в этом месяце"
+      : "Ты пока отстаёшь от плана в этом месяце";
+
+  const plannedNow = useMemo(() => {
+    if (!plan) return 0;
+
+    const monthly = Number(plan.monthlyContribution || 0);
+    const startDate = new Date(plan.planStartDate);
+    const now = new Date();
+
+    const months =
+      (now.getFullYear() - startDate.getFullYear()) * 12 +
+      (now.getMonth() - startDate.getMonth());
+
+    const safeMonths = Math.max(0, months);
+
+    return safeMonths * monthly;
+  }, [plan]);
+
+  const deviation = totalCapital - plannedNow;
+
+  const recentOperations = useMemo(() => {
+    return [...operations]
+      .sort((a, b) => {
+        const dateCompare = b.operation_date.localeCompare(a.operation_date);
+        if (dateCompare !== 0) return dateCompare;
+        return b.created_at.localeCompare(a.created_at);
+      })
+      .slice(0, 5);
+  }, [operations]);
+
   return (
     <div className="space-y-6">
-      <section className="app-card">
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-2">
-              <h1 className="app-page-title">Capital Tracker</h1>
-              <p className="app-page-subtitle">
-                Система планирования и контроля личного капитала
-              </p>
-            </div>
+      <div>
+        <h1 className="app-page-title">Обзор</h1>
+        <p className="app-page-subtitle">
+          Короткий срез всей системы: где ты сейчас, как идёшь по плану и что
+          происходит в этом месяце
+        </p>
+      </div>
 
-            <AuthStatus />
-          </div>
+      <OverviewCards
+        totalCapital={totalCapital}
+        plannedNow={plannedNow}
+        deviation={deviation}
+        formatNumber={formatNumber}
+      />
 
-          <p className="app-text-secondary max-w-[760px]">
-            Не калькулятор на два вечера, а рабочий инструмент, который помогает
-            держать в одной системе стратегию, реальные взносы и текущую
-            структуру капитала.
-          </p>
+      <OverviewMonthBlock
+        monthlyPlan={monthlyPlan}
+        currentMonthFact={currentMonthFact}
+        remainingThisMonth={remainingThisMonth}
+        monthStatusText={monthStatusText}
+        formatNumber={formatNumber}
+      />
 
-          <div className="flex flex-wrap gap-3 pt-1">
-            <Link href="/strategy" className="app-button">
-              Открыть стратегию
-            </Link>
-            <Link href="/capital" className="app-button">
-              Открыть капитал
-            </Link>
-          </div>
-        </div>
-      </section>
+      <OverviewRecentActions
+        operations={recentOperations}
+        formatNumber={formatNumber}
+      />
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <div className="app-card">
-          <div className="space-y-2">
-            <h2 className="app-card-title">Стратегия</h2>
-            <p className="app-text-secondary">
-              Собрать целевую модель капитала: срок, взнос, инфляция, структура
-              портфеля и ориентир по результату.
-            </p>
-          </div>
-        </div>
-
-        <div className="app-card">
-          <div className="space-y-2">
-            <h2 className="app-card-title">Капитал</h2>
-            <p className="app-text-secondary">
-              Вносить реальные пополнения, видеть текущую сумму капитала,
-              историю операций и фактическую структуру.
-            </p>
-          </div>
-        </div>
-
-        <div className="app-card">
-          <div className="space-y-2">
-            <h2 className="app-card-title">Контроль</h2>
-            <p className="app-text-secondary">
-              Держать план и факт в одном поле зрения и принимать решения не по
-              ощущениям, а по цифрам.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="app-card">
-        <div className="space-y-4">
-          <h2 className="app-card-title">Как это работает</h2>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-1">
-              <div className="app-card-title">1. Настрой стратегию</div>
-              <p className="app-text-secondary">
-                Задай срок, регулярный взнос и целевую структуру капитала.
-              </p>
-            </div>
-
-            <div className="space-y-1">
-              <div className="app-card-title">2. Вноси факт</div>
-              <p className="app-text-secondary">
-                Добавляй реальные пополнения по мере движения денег.
-              </p>
-            </div>
-
-            <div className="space-y-1">
-              <div className="app-card-title">3. Следи за результатом</div>
-              <p className="app-text-secondary">
-                Смотри текущую сумму капитала, историю операций и распределение
-                по категориям.
-              </p>
-            </div>
-
-            <div className="space-y-1">
-              <div className="app-card-title">4. Корректируй курс</div>
-              <p className="app-text-secondary">
-                Если цели или условия меняются, обновляй стратегию и продолжай
-                двигаться по системе.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <OverviewAuthorNote />
     </div>
   );
 }

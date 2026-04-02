@@ -1,225 +1,168 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import MainParameters from "@/components/MainParameters";
-import PortfolioStructure from "@/components/PortfolioStructure";
-import ResultBlock from "@/components/ResultBlock";
-import { useStrategy } from "@/hooks/useStrategy";
-import { formatNumber } from "@/lib/calculations";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  fetchPlanSettings,
+  upsertPlanSettings,
+  type PlanSettings,
+} from "@/lib/plan";
+import { showToast } from "@/lib/toast";
+import { calculateCapital } from "@/lib/calculations";
+import {
+  buildCompositionItems,
+  detectDistributionMode,
+  getYearsWord,
+  type DistributionMode,
+} from "@/lib/strategy";
+import StrategyInfoBar from "@/components/strategy/StrategyInfoBar";
+import StrategyResultCard from "@/components/strategy/StrategyResultCard";
+import StrategyPlanForm from "@/components/strategy/StrategyPlanForm";
+import StrategyDistributionCard from "@/components/strategy/StrategyDistributionCard";
+import StrategyPortfolioCard from "@/components/strategy/StrategyPortfolioCard";
 
-type StrategyMode = "cash" | "balanced" | "manual";
+type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 export default function StrategyPage() {
-  const s = useStrategy();
-  const [mode, setMode] = useState<StrategyMode>("cash");
+  const [plan, setPlan] = useState<PlanSettings | null>(null);
+  const [distributionMode, setDistributionMode] =
+    useState<DistributionMode>("cash");
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+
+  const hasLoadedRef = useRef(false);
+  const saveTimeoutRef = useRef<number | null>(null);
+  const resetStatusTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (mode === "cash") {
-      s.setRubCashShare("100");
-      s.setRubCashReturn("0");
+    void load();
+  }, []);
 
-      s.setStocksBondsShare("0");
-      s.setStocksBondsReturn("0");
+  async function load() {
+    const data = await fetchPlanSettings();
+    setPlan(data);
+    setDistributionMode(detectDistributionMode(data));
+    hasLoadedRef.current = true;
+  }
 
-      s.setMetalsShare("0");
-      s.setMetalsReturn("0");
+  function handlePlanChange(next: PlanSettings) {
+    setPlan(next);
+  }
 
-      s.setRealEstateShare("0");
-      s.setRealEstateReturn("0");
+  useEffect(() => {
+    if (!hasLoadedRef.current || !plan) return;
 
-      s.setCurrencyShare("0");
-      s.setCurrencyReturn("0");
+    setSaveStatus("saving");
 
-      s.setOtherReturn("0");
+    if (saveTimeoutRef.current) {
+      window.clearTimeout(saveTimeoutRef.current);
     }
 
-    if (mode === "balanced") {
-      s.setRubCashShare("25");
-      s.setRubCashReturn("8");
+    saveTimeoutRef.current = window.setTimeout(async () => {
+      try {
+        await upsertPlanSettings(plan);
+        setSaveStatus("saved");
 
-      s.setStocksBondsShare("60");
-      s.setStocksBondsReturn("14");
+        if (resetStatusTimeoutRef.current) {
+          window.clearTimeout(resetStatusTimeoutRef.current);
+        }
 
-      s.setMetalsShare("15");
-      s.setMetalsReturn("5");
+        resetStatusTimeoutRef.current = window.setTimeout(() => {
+          setSaveStatus("idle");
+        }, 1500);
+      } catch {
+        setSaveStatus("error");
+        showToast({
+          type: "error",
+          title: "Ошибка",
+          description: "Не удалось сохранить изменения",
+        });
+      }
+    }, 500);
 
-      s.setRealEstateShare("0");
-      s.setRealEstateReturn("0");
+    return () => {
+      if (saveTimeoutRef.current) {
+        window.clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [plan]);
 
-      s.setCurrencyShare("0");
-      s.setCurrencyReturn("0");
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        window.clearTimeout(saveTimeoutRef.current);
+      }
 
-      s.setOtherReturn("0");
-    }
-  }, [mode]);
+      if (resetStatusTimeoutRef.current) {
+        window.clearTimeout(resetStatusTimeoutRef.current);
+      }
+    };
+  }, []);
 
-  const baseCapital = useMemo(() => {
-    const value = Number(s.initialCapital || 0);
-    return Number.isNaN(value) ? 0 : value;
-  }, [s.initialCapital]);
+  const result = useMemo(() => {
+    if (!plan) return null;
+    return calculateCapital(plan);
+  }, [plan]);
 
-  const cashOnlyAmount = baseCapital;
+  const compositionItems = useMemo(() => {
+    if (!plan) return [];
+    return buildCompositionItems(plan);
+  }, [plan]);
 
-  const balancedCashAmount = Math.round(baseCapital * 0.25);
-  const balancedStocksAmount = Math.round(baseCapital * 0.6);
-  const balancedMetalsAmount = Math.round(baseCapital * 0.15);
+  if (!plan) return null;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="app-page-title">Стратегия</h1>
-          <p className="app-page-subtitle">
-            Сценарий роста капитала, структура и ориентир по результату
-          </p>
-        </div>
+      <h1 className="app-page-title">Стратегия</h1>
 
-        {s.saveStatus !== "idle" && (
-          <div
-            className="text-[13px] leading-[18px] whitespace-nowrap pt-1"
-            style={{ color: s.getSaveStatusColor() }}
-          >
-            {s.getSaveStatusText()}
-          </div>
+      <StrategyInfoBar />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {result?.success && (
+          <StrategyResultCard
+            years={plan.years}
+            nominalCapital={result.nominalCapital}
+            realCapital={result.realCapital}
+            portfolioRatePercent={result.portfolioRatePercent}
+            getYearsWord={getYearsWord}
+          />
         )}
+
+        <StrategyPlanForm
+          plan={plan}
+          onChangePlan={handlePlanChange}
+          saveStatusText={getSaveStatusText(saveStatus)}
+          saveStatusColor={getSaveStatusColor(saveStatus)}
+        />
       </div>
 
-      {s.errorText && <div className="app-error-box">{s.errorText}</div>}
-
-      <ResultBlock
-        cardClass="app-card"
-        nominalResult={s.nominalResult}
-        realResult={s.realResult}
-        errorText=""
-      />
-
-      <div className="grid gap-4 lg:gap-6 grid-cols-1 xl:grid-cols-[1.05fr_1.15fr]">
-        <MainParameters
-          cardClass="app-card"
-          commonInputClass="app-input"
-          initialCapital={s.initialCapital}
-          setInitialCapital={s.setInitialCapital}
-          monthlyContribution={s.monthlyContribution}
-          setMonthlyContribution={s.setMonthlyContribution}
-          inflation={s.inflation}
-          setInflation={s.setInflation}
-          contributionGrowth={s.contributionGrowth}
-          setContributionGrowth={s.setContributionGrowth}
-          years={s.years}
-          setYears={s.setYears}
-          planStartDate={s.planStartDate}
-          setPlanStartDate={s.setPlanStartDate}
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <StrategyDistributionCard
+          plan={plan}
+          distributionMode={distributionMode}
+          setDistributionMode={setDistributionMode}
+          onChangePlan={handlePlanChange}
         />
 
-        <section className="app-card">
-          <div className="app-card-title mb-4">Способ распределения капитала</div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <button
-              onClick={() => setMode("cash")}
-              className="rounded-[14px] border px-4 py-3 text-left transition-colors"
-              style={{
-                borderColor: mode === "cash" ? "var(--accent)" : "var(--border)",
-                background:
-                  mode === "cash" ? "rgba(59,130,246,0.08)" : "transparent",
-              }}
-            >
-              <div className="font-medium">Только Cash</div>
-              <div className="app-text-small mt-1">
-                Простой режим без сложной структуры
-              </div>
-            </button>
-
-            <button
-              onClick={() => setMode("balanced")}
-              className="rounded-[14px] border px-4 py-3 text-left transition-colors"
-              style={{
-                borderColor:
-                  mode === "balanced" ? "var(--accent)" : "var(--border)",
-                background:
-                  mode === "balanced"
-                    ? "rgba(59,130,246,0.08)"
-                    : "transparent",
-              }}
-            >
-              <div className="font-medium">Баланс</div>
-              <div className="app-text-small mt-1">
-                Cash, акции и металлы в готовой пропорции
-              </div>
-            </button>
-
-            <button
-              onClick={() => setMode("manual")}
-              className="rounded-[14px] border px-4 py-3 text-left transition-colors"
-              style={{
-                borderColor:
-                  mode === "manual" ? "var(--accent)" : "var(--border)",
-                background:
-                  mode === "manual"
-                    ? "rgba(59,130,246,0.08)"
-                    : "transparent",
-              }}
-            >
-              <div className="font-medium">Настроить самому</div>
-              <div className="app-text-small mt-1">
-                Ручная настройка структуры и доходности
-              </div>
-            </button>
-          </div>
-
-          {mode === "cash" && (
-            <div className="mt-4 rounded-[14px] border border-[var(--border)] p-4">
-              <div className="app-card-title mb-3">Состав портфеля</div>
-              <div className="space-y-2 text-[14px]">
-                <div>Cash — {formatNumber(cashOnlyAmount)} ₽ (100%)</div>
-              </div>
-            </div>
-          )}
-
-          {mode === "balanced" && (
-            <div className="mt-4 rounded-[14px] border border-[var(--border)] p-4">
-              <div className="app-card-title mb-3">Состав портфеля</div>
-              <div className="space-y-2 text-[14px]">
-                <div>Cash — {formatNumber(balancedCashAmount)} ₽ (25%)</div>
-                <div>Акции — {formatNumber(balancedStocksAmount)} ₽ (60%)</div>
-                <div>Металлы — {formatNumber(balancedMetalsAmount)} ₽ (15%)</div>
-              </div>
-            </div>
-          )}
-        </section>
-      </div>
-
-      {mode === "manual" && (
-        <PortfolioStructure
-          cardClass="app-card"
-          commonInputClass="app-input"
-          stocksBondsShare={s.stocksBondsShare}
-          setStocksBondsShare={s.setStocksBondsShare}
-          stocksBondsReturn={s.stocksBondsReturn}
-          setStocksBondsReturn={s.setStocksBondsReturn}
-          rubCashShare={s.rubCashShare}
-          setRubCashShare={s.setRubCashShare}
-          rubCashReturn={s.rubCashReturn}
-          setRubCashReturn={s.setRubCashReturn}
-          metalsShare={s.metalsShare}
-          setMetalsShare={s.setMetalsShare}
-          metalsReturn={s.metalsReturn}
-          setMetalsReturn={s.setMetalsReturn}
-          realEstateShare={s.realEstateShare}
-          setRealEstateShare={s.setRealEstateShare}
-          realEstateReturn={s.realEstateReturn}
-          setRealEstateReturn={s.setRealEstateReturn}
-          currencyShare={s.currencyShare}
-          setCurrencyShare={s.setCurrencyShare}
-          currencyReturn={s.currencyReturn}
-          setCurrencyReturn={s.setCurrencyReturn}
-          otherShare={s.otherShare}
-          otherReturn={s.otherReturn}
-          setOtherReturn={s.setOtherReturn}
-          totalShare={s.totalManualShare + Math.max(s.otherShare, 0)}
-          portfolioResult={s.portfolioResult}
+        <StrategyPortfolioCard
+          items={compositionItems}
+          portfolioRatePercent={
+            result?.success ? result.portfolioRatePercent : undefined
+          }
         />
-      )}
+      </section>
     </div>
   );
+}
+
+function getSaveStatusText(saveStatus: SaveStatus) {
+  if (saveStatus === "saving") return "Сохраняем...";
+  if (saveStatus === "saved") return "Сохранено";
+  if (saveStatus === "error") return "Ошибка сохранения";
+  return "";
+}
+
+function getSaveStatusColor(saveStatus: SaveStatus) {
+  if (saveStatus === "saving") return "#9ca3af";
+  if (saveStatus === "saved") return "#22c55e";
+  if (saveStatus === "error") return "#ef4444";
+  return "transparent";
 }
