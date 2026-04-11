@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
+function formatDateOnly(value: unknown) {
+  if (!value) return "";
+
+  if (value instanceof Date) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, "0");
+    const day = String(value.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  return String(value);
+}
+
 export async function GET() {
   try {
     const result = await query(
@@ -22,11 +35,8 @@ export async function GET() {
       id: String(row.id),
       amount: Number(row.amount),
       comment: row.comment,
-      operation_date:
-        row.operation_date instanceof Date
-          ? row.operation_date.toISOString().slice(0, 10)
-          : String(row.operation_date),
-      asset_category: row.asset_category,
+      operation_date: formatDateOnly(row.operation_date),
+      asset_category: row.asset_category || "Прочее",
       created_at:
         row.created_at instanceof Date
           ? row.created_at.toISOString()
@@ -54,9 +64,11 @@ export async function POST(request: Request) {
 
     const amount = Number(body.amount);
     const comment = body.comment ?? null;
-    const operation_date =
-      body.operation_date ?? new Date().toISOString().slice(0, 10);
-    const asset_category = body.asset_category ?? null;
+    const operation_date = body.operation_date ?? formatDateOnly(new Date());
+    const asset_category =
+      typeof body.asset_category === "string" && body.asset_category.trim()
+        ? body.asset_category.trim()
+        : "Прочее";
     const type = body.type;
 
     if (!amount || Number.isNaN(amount)) {
@@ -101,11 +113,8 @@ export async function POST(request: Request) {
       id: String(row.id),
       amount: Number(row.amount),
       comment: row.comment,
-      operation_date:
-        row.operation_date instanceof Date
-          ? row.operation_date.toISOString().slice(0, 10)
-          : String(row.operation_date),
-      asset_category: row.asset_category,
+      operation_date: formatDateOnly(row.operation_date),
+      asset_category: row.asset_category || "Прочее",
       created_at:
         row.created_at instanceof Date
           ? row.created_at.toISOString()

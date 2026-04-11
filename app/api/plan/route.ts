@@ -3,6 +3,19 @@ import { query } from "@/lib/db";
 
 const DEFAULT_USER_ID = 1;
 
+function formatDateOnly(value: unknown) {
+  if (!value) return "";
+
+  if (value instanceof Date) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, "0");
+    const day = String(value.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  return String(value);
+}
+
 function mapRow(row: any) {
   return {
     monthlyContribution: String(row.monthly_contribution ?? "50000"),
@@ -25,11 +38,19 @@ function mapRow(row: any) {
     currencyShare: String(row.currency_share ?? "5"),
     currencyReturn: String(row.currency_return ?? "2"),
 
+    bondsShare: String(row.bonds_share ?? "0"),
+    bondsReturn: String(row.bonds_return ?? "11"),
+
+    depositsShare: String(row.deposits_share ?? "0"),
+    depositsReturn: String(row.deposits_return ?? "12"),
+
+    cryptoShare: String(row.crypto_share ?? "0"),
+    cryptoReturn: String(row.crypto_return ?? "0"),
+
+    otherShare: String(row.other_share ?? "0"),
     otherReturn: String(row.other_return ?? "0"),
-    planStartDate:
-      row.plan_start_date instanceof Date
-        ? row.plan_start_date.toISOString().slice(0, 10)
-        : String(row.plan_start_date ?? ""),
+
+    planStartDate: formatDateOnly(row.plan_start_date),
   };
 }
 
@@ -52,6 +73,13 @@ export async function GET() {
         real_estate_return,
         currency_share,
         currency_return,
+        bonds_share,
+        bonds_return,
+        deposits_share,
+        deposits_return,
+        crypto_share,
+        crypto_return,
+        other_share,
         other_return,
         plan_start_date
       FROM plan_settings
@@ -101,6 +129,13 @@ export async function POST(request: Request) {
         real_estate_return,
         currency_share,
         currency_return,
+        bonds_share,
+        bonds_return,
+        deposits_share,
+        deposits_return,
+        crypto_share,
+        crypto_return,
+        other_share,
         other_return,
         plan_start_date,
         updated_at
@@ -108,7 +143,8 @@ export async function POST(request: Request) {
       VALUES (
         $1,$2,$3,$4,$5,
         $6,$7,$8,$9,$10,$11,
-        $12,$13,$14,$15,$16,$17,NOW()
+        $12,$13,$14,$15,$16,$17,
+        $18,$19,$20,$21,$22,$23,$24,NOW()
       )
       ON CONFLICT (user_id)
       DO UPDATE SET
@@ -126,6 +162,13 @@ export async function POST(request: Request) {
         real_estate_return = EXCLUDED.real_estate_return,
         currency_share = EXCLUDED.currency_share,
         currency_return = EXCLUDED.currency_return,
+        bonds_share = EXCLUDED.bonds_share,
+        bonds_return = EXCLUDED.bonds_return,
+        deposits_share = EXCLUDED.deposits_share,
+        deposits_return = EXCLUDED.deposits_return,
+        crypto_share = EXCLUDED.crypto_share,
+        crypto_return = EXCLUDED.crypto_return,
+        other_share = EXCLUDED.other_share,
         other_return = EXCLUDED.other_return,
         plan_start_date = EXCLUDED.plan_start_date,
         updated_at = NOW()
@@ -144,6 +187,13 @@ export async function POST(request: Request) {
         real_estate_return,
         currency_share,
         currency_return,
+        bonds_share,
+        bonds_return,
+        deposits_share,
+        deposits_return,
+        crypto_share,
+        crypto_return,
+        other_share,
         other_return,
         plan_start_date
       `,
@@ -163,6 +213,13 @@ export async function POST(request: Request) {
         Number(body.realEstateReturn ?? 0),
         Number(body.currencyShare ?? 0),
         Number(body.currencyReturn ?? 0),
+        Number(body.bondsShare ?? 0),
+        Number(body.bondsReturn ?? 0),
+        Number(body.depositsShare ?? 0),
+        Number(body.depositsReturn ?? 0),
+        Number(body.cryptoShare ?? 0),
+        Number(body.cryptoReturn ?? 0),
+        Number(body.otherShare ?? 0),
         Number(body.otherReturn ?? 0),
         body.planStartDate || null,
       ]
