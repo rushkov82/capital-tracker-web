@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { getCurrentUser } from "@/lib/current-user";
 
 function formatDateOnly(value: unknown) {
   if (!value) return "";
@@ -16,6 +17,12 @@ function formatDateOnly(value: unknown) {
 
 export async function GET() {
   try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    }
+
     const result = await query(
       `
       SELECT
@@ -27,8 +34,10 @@ export async function GET() {
         created_at,
         type
       FROM operations
+      WHERE user_id = $1
       ORDER BY operation_date DESC, created_at DESC
-      `
+      `,
+      [user.id]
     );
 
     const operations = result.rows.map((row) => ({
@@ -60,6 +69,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    }
+
     const body = await request.json();
 
     const amount = Number(body.amount);
@@ -88,13 +103,14 @@ export async function POST(request: Request) {
     const result = await query(
       `
       INSERT INTO operations (
+        user_id,
         amount,
         comment,
         operation_date,
         asset_category,
         type
       )
-      VALUES ($1, $2, $3, $4, $5)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING
         id,
         amount,
@@ -104,7 +120,7 @@ export async function POST(request: Request) {
         created_at,
         type
       `,
-      [amount, comment, operation_date, asset_category, type]
+      [user.id, amount, comment, operation_date, asset_category, type]
     );
 
     const row = result.rows[0];

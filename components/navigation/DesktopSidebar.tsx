@@ -98,13 +98,7 @@ export default function DesktopSidebar({
         </nav>
 
         <div className="mt-auto pt-6">
-          <div className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2">
-            <div className="text-[13px] text-[var(--text-secondary)]">
-              Аккаунт
-            </div>
-
-            <AuthStatus />
-          </div>
+          <AuthStatus />
         </div>
       </div>
     </aside>

@@ -7,6 +7,11 @@ import {
   updateOperation,
   type Operation,
 } from "@/lib/operations";
+import {
+  createDemoOperation,
+  deleteDemoOperation,
+  updateDemoOperation,
+} from "@/lib/demo-storage";
 import { normalizeOperations } from "@/lib/operations-helpers";
 import { normalizeAssetCategory } from "@/lib/constants";
 import { showToast } from "@/lib/toast";
@@ -21,7 +26,12 @@ type EditSnapshot = {
 };
 
 export function useOperationsController() {
-  const { operations, refreshOperations, isLoading } = useCoreData();
+  const {
+    operations,
+    refreshOperations,
+    isLoading,
+    storageMode,
+  } = useCoreData();
 
   const [mounted, setMounted] = useState(false);
 
@@ -282,23 +292,39 @@ export function useOperationsController() {
     }
 
     try {
-      await createOperation({
-        amount: normalizedAmount,
-        comment: comment.trim() || null,
-        operation_date: operationDate,
-        asset_category: assetCategory || null,
-        type: createType,
-      });
+      if (storageMode === "local") {
+        createDemoOperation({
+          amount: normalizedAmount,
+          comment: comment.trim() || null,
+          operation_date: operationDate,
+          asset_category: assetCategory || null,
+          type: createType,
+        });
+      } else {
+        await createOperation({
+          amount: normalizedAmount,
+          comment: comment.trim() || null,
+          operation_date: operationDate,
+          asset_category: assetCategory || null,
+          type: createType,
+        });
+      }
 
-      showToast({
-        type: "success",
-        title: "Сохранено",
-        description: "Операция добавлена",
-      });
+      if (storageMode !== "local") {
+        showToast({
+          type: "success",
+          title: "Сохранено",
+          description: "Операция добавлена",
+        });
+      }
 
       resetForm();
       await refreshOperations();
     } catch {
+      if (storageMode === "local") {
+        return;
+      }
+
       showToast({
         type: "error",
         title: "Ошибка",
@@ -338,19 +364,31 @@ export function useOperationsController() {
     }
 
     try {
-      await updateOperation(currentEditingOperation.id, {
-        amount: normalizedAmount,
-        comment: comment.trim() || null,
-        operation_date: operationDate,
-        asset_category: assetCategory || null,
-        type: editType,
-      });
+      if (storageMode === "local") {
+        updateDemoOperation(currentEditingOperation.id, {
+          amount: normalizedAmount,
+          comment: comment.trim() || null,
+          operation_date: operationDate,
+          asset_category: assetCategory || null,
+          type: editType,
+        });
+      } else {
+        await updateOperation(currentEditingOperation.id, {
+          amount: normalizedAmount,
+          comment: comment.trim() || null,
+          operation_date: operationDate,
+          asset_category: assetCategory || null,
+          type: editType,
+        });
+      }
 
-      showToast({
-        type: "success",
-        title: "Сохранено",
-        description: "Операция обновлена",
-      });
+      if (storageMode !== "local") {
+        showToast({
+          type: "success",
+          title: "Сохранено",
+          description: "Операция обновлена",
+        });
+      }
 
       setEditSnapshot({
         amount: String(normalizedAmount),
@@ -361,6 +399,10 @@ export function useOperationsController() {
 
       await refreshOperations();
     } catch {
+      if (storageMode === "local") {
+        return;
+      }
+
       showToast({
         type: "error",
         title: "Ошибка",
@@ -373,13 +415,19 @@ export function useOperationsController() {
     if (!deleteTarget) return;
 
     try {
-      await deleteOperation(deleteTarget.id);
+      if (storageMode === "local") {
+        deleteDemoOperation(deleteTarget.id);
+      } else {
+        await deleteOperation(deleteTarget.id);
+      }
 
-      showToast({
-        type: "success",
-        title: "Удалено",
-        description: "Операция удалена",
-      });
+      if (storageMode !== "local") {
+        showToast({
+          type: "success",
+          title: "Удалено",
+          description: "Операция удалена",
+        });
+      }
 
       if (editingOperationId === deleteTarget.id) {
         closeOperationModal();
@@ -388,6 +436,10 @@ export function useOperationsController() {
       setDeleteTarget(null);
       await refreshOperations();
     } catch {
+      if (storageMode === "local") {
+        return;
+      }
+
       showToast({
         type: "error",
         title: "Ошибка",

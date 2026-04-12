@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { upsertPlanSettings, type PlanSettings } from "@/lib/plan";
+import { writeDemoPlan } from "@/lib/demo-storage";
 import { showToast } from "@/lib/toast";
 import { calculateCapital } from "@/lib/calculations";
 import {
@@ -14,7 +15,7 @@ import { useCoreData } from "@/components/core/CoreDataProvider";
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 export function useStrategyController() {
-  const { plan, setPlan, isLoading } = useCoreData();
+  const { plan, setPlan, isLoading, storageMode } = useCoreData();
 
   const [appliedDistributionMode, setAppliedDistributionMode] =
     useState<DistributionMode>("cash");
@@ -74,7 +75,12 @@ export function useStrategyController() {
 
     saveTimeoutRef.current = window.setTimeout(async () => {
       try {
-        await upsertPlanSettings(plan);
+        if (storageMode === "local") {
+          writeDemoPlan(plan);
+        } else {
+          await upsertPlanSettings(plan);
+        }
+
         setSaveStatus("saved");
 
         if (resetStatusTimeoutRef.current) {
@@ -85,6 +91,11 @@ export function useStrategyController() {
           setSaveStatus("idle");
         }, 1500);
       } catch {
+        if (storageMode === "local") {
+          setSaveStatus("idle");
+          return;
+        }
+
         setSaveStatus("error");
 
         showToast({
@@ -100,7 +111,7 @@ export function useStrategyController() {
         window.clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [plan]);
+  }, [plan, storageMode]);
 
   useEffect(() => {
     return () => {
@@ -141,6 +152,7 @@ export function useStrategyController() {
     isLoading,
     appliedDistributionMode,
     saveStatus,
+    storageMode,
     showFloatingSummary,
     result,
     compositionItems,

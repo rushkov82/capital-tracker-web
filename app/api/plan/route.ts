@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
-
-const DEFAULT_USER_ID = 1;
+import { getCurrentUser } from "@/lib/current-user";
 
 function formatDateOnly(value: unknown) {
   if (!value) return "";
@@ -56,6 +55,12 @@ function mapRow(row: any) {
 
 export async function GET() {
   try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    }
+
     const result = await query(
       `
       SELECT
@@ -86,7 +91,7 @@ export async function GET() {
       WHERE user_id = $1
       LIMIT 1
       `,
-      [DEFAULT_USER_ID]
+      [user.id]
     );
 
     if (result.rows.length === 0) {
@@ -109,6 +114,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    }
+
     const body = await request.json();
 
     const result = await query(
@@ -198,7 +209,7 @@ export async function POST(request: Request) {
         plan_start_date
       `,
       [
-        DEFAULT_USER_ID,
+        user.id,
         Number(body.monthlyContribution ?? 0),
         Number(body.inflation ?? 0),
         Number(body.contributionGrowth ?? 0),

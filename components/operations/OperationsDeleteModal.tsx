@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Operation } from "@/lib/operations";
 
 type OperationsDeleteModalProps = {
@@ -14,6 +15,12 @@ export default function OperationsDeleteModal({
   onClose,
   onConfirm,
 }: OperationsDeleteModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!operation) return;
 
@@ -34,16 +41,16 @@ export default function OperationsDeleteModal({
     };
   }, [operation, onClose]);
 
-  if (!operation) return null;
+  if (!mounted || !operation) return null;
 
   const operationTitle =
     operation.comment?.trim() ||
     operation.asset_category ||
     "операцию без комментария";
 
-  return (
+  const modalNode = (
     <div
-      className="fixed inset-0 z-[90] flex items-end justify-center bg-black/30 p-3 md:items-center md:p-6"
+      className="fixed inset-0 z-[220] flex items-end justify-center bg-black/30 p-3 md:items-center md:p-6"
       onClick={onClose}
     >
       <div
@@ -75,4 +82,6 @@ export default function OperationsDeleteModal({
       </div>
     </div>
   );
+
+  return createPortal(modalNode, document.body);
 }

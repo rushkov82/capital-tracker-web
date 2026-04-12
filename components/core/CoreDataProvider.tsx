@@ -14,7 +14,10 @@ import {
   type PlanSettings,
 } from "@/lib/plan";
 import { fetchOperations, type Operation } from "@/lib/operations";
+import { readDemoOperations, readDemoPlan } from "@/lib/demo-storage";
 import { showToast } from "@/lib/toast";
+
+type StorageMode = "remote" | "local";
 
 type CoreDataContextValue = {
   plan: PlanSettings | null;
@@ -24,6 +27,7 @@ type CoreDataContextValue = {
   refreshPlan: () => Promise<void>;
   refreshOperations: () => Promise<void>;
   isLoading: boolean;
+  storageMode: StorageMode;
 };
 
 const CoreDataContext = createContext<CoreDataContextValue | null>(null);
@@ -36,8 +40,14 @@ export function CoreDataProvider({
   const [plan, setPlan] = useState<PlanSettings | null>(null);
   const [operations, setOperations] = useState<Operation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [storageMode, setStorageMode] = useState<StorageMode>("remote");
 
   const refreshPlan = useCallback(async () => {
+    if (storageMode === "local") {
+      setPlan(readDemoPlan());
+      return;
+    }
+
     try {
       const data = await fetchPlanSettings();
       setPlan(data);
@@ -51,9 +61,14 @@ export function CoreDataProvider({
           "Не удалось загрузить стратегию, показаны значения по умолчанию",
       });
     }
-  }, []);
+  }, [storageMode]);
 
   const refreshOperations = useCallback(async () => {
+    if (storageMode === "local") {
+      setOperations(readDemoOperations());
+      return;
+    }
+
     try {
       const data = await fetchOperations();
       setOperations(data);
@@ -66,13 +81,43 @@ export function CoreDataProvider({
         description: "Не удалось загрузить операции",
       });
     }
-  }, []);
+  }, [storageMode]);
 
   useEffect(() => {
     let isCancelled = false;
 
     async function loadAll() {
       setIsLoading(true);
+
+      let isAuthorized = false;
+
+      try {
+        const meResponse = await fetch("/api/auth/me", {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        const meData = (await meResponse.json()) as {
+          ok?: boolean;
+          user?: { id: string } | null;
+        };
+
+        isAuthorized = Boolean(meData?.user);
+      } catch {
+        isAuthorized = false;
+      }
+
+      if (isCancelled) return;
+
+      if (!isAuthorized) {
+        setStorageMode("local");
+        setPlan(readDemoPlan());
+        setOperations(readDemoOperations());
+        setIsLoading(false);
+        return;
+      }
+
+      setStorageMode("remote");
 
       const [planResult, operationsResult] = await Promise.allSettled([
         fetchPlanSettings(),
@@ -125,8 +170,9 @@ export function CoreDataProvider({
       refreshPlan,
       refreshOperations,
       isLoading,
+      storageMode,
     }),
-    [plan, operations, refreshPlan, refreshOperations, isLoading]
+    [plan, operations, refreshPlan, refreshOperations, isLoading, storageMode]
   );
 
   return (

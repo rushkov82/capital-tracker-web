@@ -1,17 +1,36 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { getCurrentUser } from "@/lib/current-user";
 
 type Context = {
   params: Promise<{ id: string }>;
 };
 
+function formatDateOnly(value: unknown) {
+  if (!value) return "";
+
+  if (value instanceof Date) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, "0");
+    const day = String(value.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  return String(value);
+}
+
 export async function PATCH(request: Request, context: Context) {
   try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    }
+
     const { id } = await context.params;
     const body = await request.json();
 
-    const amount =
-      body.amount !== undefined ? Number(body.amount) : undefined;
+    const amount = body.amount !== undefined ? Number(body.amount) : undefined;
     const comment = body.comment;
     const operation_date = body.operation_date;
     const asset_category = body.asset_category;
@@ -28,10 +47,10 @@ export async function PATCH(request: Request, context: Context) {
         created_at,
         type
       FROM operations
-      WHERE id = $1
+      WHERE id = $1 AND user_id = $2
       LIMIT 1
       `,
-      [id]
+      [id, user.id]
     );
 
     if (currentResult.rows.length === 0) {
@@ -48,20 +67,17 @@ export async function PATCH(request: Request, context: Context) {
         ? amount
         : Number(current.amount);
 
-    const nextComment =
-      comment !== undefined ? comment : current.comment;
+    const nextComment = comment !== undefined ? comment : current.comment;
 
     const nextOperationDate =
       operation_date !== undefined
         ? operation_date
         : current.operation_date instanceof Date
-        ? current.operation_date.toISOString().slice(0, 10)
-        : String(current.operation_date);
+          ? current.operation_date.toISOString().slice(0, 10)
+          : String(current.operation_date);
 
     const nextAssetCategory =
-      asset_category !== undefined
-        ? asset_category
-        : current.asset_category;
+      asset_category !== undefined ? asset_category : current.asset_category;
 
     const nextType = type !== undefined ? type : current.type;
 
@@ -83,12 +99,12 @@ export async function PATCH(request: Request, context: Context) {
       `
       UPDATE operations
       SET
-        amount = $2,
-        comment = $3,
-        operation_date = $4,
-        asset_category = $5,
-        type = $6
-      WHERE id = $1
+        amount = $3,
+        comment = $4,
+        operation_date = $5,
+        asset_category = $6,
+        type = $7
+      WHERE id = $1 AND user_id = $2
       RETURNING
         id,
         amount,
@@ -98,7 +114,7 @@ export async function PATCH(request: Request, context: Context) {
         created_at,
         type
       `,
-      [id, nextAmount, nextComment, nextOperationDate, nextAssetCategory, nextType]
+      [id, user.id, nextAmount, nextComment, nextOperationDate, nextAssetCategory, nextType]
     );
 
     const row = result.rows[0];
@@ -107,10 +123,7 @@ export async function PATCH(request: Request, context: Context) {
       id: String(row.id),
       amount: Number(row.amount),
       comment: row.comment,
-      operation_date:
-        row.operation_date instanceof Date
-          ? row.operation_date.toISOString().slice(0, 10)
-          : String(row.operation_date),
+      operation_date: formatDateOnly(row.operation_date),
       asset_category: row.asset_category,
       created_at:
         row.created_at instanceof Date
@@ -133,15 +146,21 @@ export async function PATCH(request: Request, context: Context) {
 
 export async function DELETE(_request: Request, context: Context) {
   try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    }
+
     const { id } = await context.params;
 
     const result = await query(
       `
       DELETE FROM operations
-      WHERE id = $1
+      WHERE id = $1 AND user_id = $2
       RETURNING id
       `,
-      [id]
+      [id, user.id]
     );
 
     if (result.rows.length === 0) {

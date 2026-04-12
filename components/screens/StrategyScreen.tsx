@@ -51,8 +51,8 @@ export default function StrategyScreen() {
       plan={controller.plan}
       isLoading={controller.isLoading}
       appliedDistributionMode={controller.appliedDistributionMode}
-      saveStatusText={getSaveStatusText(controller.saveStatus)}
-      saveStatusColor={getSaveStatusColor(controller.saveStatus)}
+      saveStatusText={controller.storageMode === "local" ? "" : getSaveStatusText(controller.saveStatus)}
+      saveStatusColor={controller.storageMode === "local" ? "transparent" : getSaveStatusColor(controller.saveStatus)}
       showFloatingSummary={controller.showFloatingSummary}
       result={controller.result}
       compositionItems={controller.compositionItems}
