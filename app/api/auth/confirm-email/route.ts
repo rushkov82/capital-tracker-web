@@ -32,12 +32,19 @@ export async function POST(request: Request) {
       user_id: string;
       used_at: string | null;
       expires_at: string;
+      email_confirmed_at: string | null;
     }>(
       `
-        SELECT id, user_id, used_at, expires_at
-        FROM auth_tokens
-        WHERE token_hash = $1
-          AND type = 'email_confirm'
+        SELECT
+          t.id,
+          t.user_id,
+          t.used_at,
+          t.expires_at,
+          u.email_confirmed_at
+        FROM auth_tokens t
+        JOIN users u ON u.id = t.user_id
+        WHERE t.token_hash = $1
+          AND t.type = 'email_confirm'
         LIMIT 1
       `,
       [tokenHash]
@@ -55,6 +62,11 @@ export async function POST(request: Request) {
 
     if (tokenRow.used_at) {
       await client.query("ROLLBACK");
+
+      if (tokenRow.email_confirmed_at) {
+        return NextResponse.json({ ok: true });
+      }
+
       return NextResponse.json(
         { error: "Ссылка уже была использована." },
         { status: 400 }
