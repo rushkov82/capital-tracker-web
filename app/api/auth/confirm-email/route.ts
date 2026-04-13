@@ -60,17 +60,14 @@ export async function POST(request: Request) {
       );
     }
 
+    if (tokenRow.email_confirmed_at) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ ok: true, alreadyConfirmed: true });
+    }
+
     if (tokenRow.used_at) {
       await client.query("ROLLBACK");
-
-      if (tokenRow.email_confirmed_at) {
-        return NextResponse.json({ ok: true });
-      }
-
-      return NextResponse.json(
-        { error: "Ссылка уже была использована." },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: true, alreadyConfirmed: true });
     }
 
     const expiresAt = new Date(tokenRow.expires_at);

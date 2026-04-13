@@ -9,6 +9,7 @@ import ActionMessage from "./components/ActionMessage";
 type ActionMode =
   | "confirm_loading"
   | "confirmed"
+  | "confirm_error"
   | "reset"
   | "reset_success"
   | "invalid";
@@ -16,6 +17,7 @@ type ActionMode =
 type ConfirmEmailResponse = {
   ok?: boolean;
   error?: string;
+   alreadyConfirmed?: boolean;
 };
 
 type ResetPasswordResponse = {
@@ -29,6 +31,7 @@ export default function AuthActionClient() {
 
   const rawMode = searchParams.get("mode");
   const token = searchParams.get("token") ?? "";
+  const [confirmAttempt, setConfirmAttempt] = useState(0);
 
   const initialMode: ActionMode = (() => {
     if (rawMode === "reset") return "reset";
@@ -71,14 +74,22 @@ export default function AuthActionClient() {
         const data = (await response.json()) as ConfirmEmailResponse;
 
         if (!response.ok) {
+          if (response.status >= 500) {
+            console.error("Confirm email failed (server error):", data.error);
+            if (!cancelled) setMode("confirm_error");
+            return;
+          }
+
           console.error("Confirm email failed:", data.error);
           if (!cancelled) setMode("invalid");
           return;
         }
 
-        if (!cancelled) setMode("confirmed");
+        if (!cancelled) {
+          setMode("confirmed");
+        }
       } catch {
-        if (!cancelled) setMode("invalid");
+        if (!cancelled) setMode("confirm_error");
       }
     }
 
@@ -87,7 +98,7 @@ export default function AuthActionClient() {
     return () => {
       cancelled = true;
     };
-  }, [rawMode, token]);
+  }, [rawMode, token, confirmAttempt]);
 
   async function handleResetSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -133,6 +144,11 @@ export default function AuthActionClient() {
     router.push("/auth");
   }
 
+  async function handleConfirmRetry() {
+    setMode("confirm_loading");
+    setConfirmAttempt((value) => value + 1);
+  }
+
   return (
     <AuthShell>
       {mode === "confirm_loading" && (
@@ -141,6 +157,15 @@ export default function AuthActionClient() {
           text="Подождите, подтверждаем вашу почту."
           buttonText="Вернуться ко входу"
           onButtonClick={handleGoToLogin}
+        />
+      )}
+
+      {mode === "confirm_error" && (
+        <ActionMessage
+          title="Не удалось подтвердить"
+          text="Произошла временная ошибка. Попробуйте ещё раз."
+          buttonText="Попробовать снова"
+          onButtonClick={handleConfirmRetry}
         />
       )}
 
