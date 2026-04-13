@@ -9,6 +9,7 @@ import StrategyPlanForm from "@/components/strategy/StrategyPlanForm";
 import StrategyDistributionCard from "@/components/strategy/StrategyDistributionCard";
 import StrategyPortfolioCard from "@/components/strategy/StrategyPortfolioCard";
 import StrategyFloatingSummary from "@/components/strategy/StrategyFloatingSummary";
+import AuthStatus from "@/components/AuthStatus";
 
 type CompositionItem = ReturnType<typeof buildCompositionItems>[number];
 
@@ -51,11 +52,17 @@ export default function StrategyScreenView({
 }: StrategyScreenViewProps) {
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="app-page-title">Стратегия</h1>
-        <p className="app-page-subtitle">
-          Как ты планируешь накапливать капитал и распределять деньги
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="app-page-title">Стратегия</h1>
+          <p className="app-page-subtitle">
+            Как ты планируешь накапливать капитал и распределять деньги
+          </p>
+        </div>
+
+        <div className="md:hidden shrink-0">
+          <AuthStatus />
+        </div>
       </div>
 
       {!isLoading && (

@@ -6,6 +6,7 @@ import OverviewForecastCard from "@/components/overview/OverviewForecastCard";
 import OverviewActionHintCard from "@/components/overview/OverviewActionHintCard";
 import OverviewTimeProgressCard from "@/components/overview/OverviewTimeProgressCard";
 import OverviewDynamicsCard from "@/components/overview/OverviewDynamicsCard";
+import AuthStatus from "@/components/AuthStatus";
 import { formatNumber } from "@/lib/calculations";
 import type { Operation } from "@/lib/operations";
 
@@ -48,11 +49,17 @@ export default function OverviewScreenView({
 }: OverviewScreenViewProps) {
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="app-page-title">Обзор</h1>
-        <p className="app-page-subtitle">
-          Общая картина накоплений и текущего темпа
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="app-page-title">Обзор</h1>
+          <p className="app-page-subtitle">
+            Общая картина накоплений и текущего темпа
+          </p>
+        </div>
+
+        <div className="md:hidden shrink-0">
+          <AuthStatus />
+        </div>
       </div>
 
       <div className="grid items-stretch gap-4 xl:grid-cols-5">

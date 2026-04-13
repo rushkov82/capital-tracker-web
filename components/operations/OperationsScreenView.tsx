@@ -5,6 +5,7 @@ import OperationsSummaryCard from "@/components/operations/OperationsSummaryCard
 import OperationsListCard from "@/components/operations/OperationsListCard";
 import OperationsOperationModal from "@/components/operations/OperationsOperationModal";
 import OperationsDeleteModal from "@/components/operations/OperationsDeleteModal";
+import AuthStatus from "@/components/AuthStatus";
 import type { Operation } from "@/lib/operations";
 import type { OperationFormActionType } from "@/components/operations/OperationForm";
 
@@ -89,11 +90,17 @@ export default function OperationsScreenView({
 }: OperationsScreenViewProps) {
   return (
     <div className="space-y-4 xl:flex xl:h-[calc(100vh-160px)] xl:flex-col xl:space-y-4">
-      <div>
-        <h1 className="app-page-title">Операции</h1>
-        <p className="app-page-subtitle">
-          Добавляйте, просматривайте и управляйте всеми действиями с капиталом
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="app-page-title">Операции</h1>
+          <p className="app-page-subtitle">
+            Добавляйте, просматривайте и управляйте всеми действиями с капиталом
+          </p>
+        </div>
+
+        <div className="md:hidden shrink-0">
+          <AuthStatus />
+        </div>
       </div>
 
       <div className="space-y-4 xl:grid xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(0,2fr)_minmax(360px,1fr)] xl:gap-4 xl:space-y-0">

@@ -20,10 +20,6 @@ export default function AppShell({
       <div className="min-h-screen min-w-0 md:pl-[220px]">
         <CoreDataProvider>
           <div className="flex min-h-screen flex-col">
-            <div className="md:hidden px-4 pt-4">
-              <AuthStatus />
-            </div>
-
             <main
               className="min-w-0 flex-1 px-4 py-4 md:px-6 md:py-6"
               style={{
