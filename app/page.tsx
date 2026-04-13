@@ -115,7 +115,7 @@ export default function EntryPage() {
                 <p className="mt-8 max-w-[520px] text-[18px] leading-[1.7] text-black/58">{heroText}</p>
                 <div className="mt-8 flex gap-3">
                   <Link
-                    href="/app/overview"
+                    href="/auth"
                     className="inline-flex h-12 items-center justify-center rounded-[14px] border border-[var(--accent)] bg-[var(--accent)] px-6 text-[15px] font-medium text-white transition hover:opacity-95"
                   >
                     Начать накопления
@@ -162,7 +162,7 @@ export default function EntryPage() {
       <section className="bg-white px-4 pt-12 pb-12 sm:hidden">
         <div className="mx-auto flex max-w-6xl flex-col gap-5 md:px-6">
           <Link
-            href="/app/overview"
+            href="/auth"
             className="inline-flex h-12 items-center justify-center rounded-[14px] border border-[var(--accent)] bg-[var(--accent)] px-6 text-[15px] font-medium text-white transition hover:opacity-95"
           >
             Начать накопления
@@ -289,7 +289,7 @@ export default function EntryPage() {
 
       <section className="pt-12 pb-12 text-center md:px-6 md:pt-16 md:pb-16">
         <Link
-          href="/app/overview"
+          href="/auth"
           className="inline-flex h-11 items-center justify-center rounded-[12px] border border-[var(--accent)] bg-[var(--accent)] px-5 text-[15px] font-medium text-white transition hover:opacity-95"
         >
           Начать накопления
