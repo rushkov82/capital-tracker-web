@@ -5,7 +5,13 @@ const smtpPort = Number(process.env.SMTP_PORT || 465);
 const smtpSecure = process.env.SMTP_SECURE === "true";
 const smtpUser = process.env.SMTP_USER;
 const smtpPass = process.env.SMTP_PASS;
-const mailFrom = process.env.MAIL_FROM || smtpUser || "hello@localhost";
+
+function sanitizeFrom(value: string | undefined) {
+  if (!value) return value;
+  return value.trim().replace(/^['"]|['"]$/g, "");
+}
+
+const mailFrom = sanitizeFrom(process.env.MAIL_FROM) || smtpUser || "hello@localhost";
 
 let transporter: nodemailer.Transporter | null = null;
 
