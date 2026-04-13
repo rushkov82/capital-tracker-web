@@ -37,7 +37,7 @@ export default function AppShell({
         <CoreDataProvider>
           <div className="flex min-h-screen flex-col">
             <main
-              className="min-w-0 flex-1 px-4 py-4 md:px-6 md:py-6"
+              className="min-w-0 flex-1 px-4 pb-4 pt-0 md:px-6 md:py-6"
               style={{
                 paddingBottom: "calc(96px + env(safe-area-inset-bottom, 0px))",
               }}
