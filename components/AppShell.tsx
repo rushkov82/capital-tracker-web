@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import DesktopSidebar from "@/components/navigation/DesktopSidebar";
 import MobileBottomNav from "@/components/navigation/MobileBottomNav";
@@ -12,6 +13,10 @@ export default function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
