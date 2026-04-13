@@ -124,7 +124,10 @@ export default function AuthStatus() {
       </button>
 
       {open && (
-        <div className="absolute bottom-[56px] left-0 z-50 w-full rounded-[12px] border border-[var(--border)] bg-[var(--card)] p-3 shadow-lg">
+        <div
+          className="absolute left-0 z-50 w-full rounded-[12px] border border-[var(--border)] bg-[var(--card)] p-3 shadow-lg"
+          style={{ top: "calc(100% + 10px)" }}
+        >
           {loading ? (
             <div className="text-[12px] leading-[1.35] text-[var(--text-secondary)]">
               Загружаем...
