@@ -14,8 +14,19 @@ export default function AppShell({
 }) {
   const pathname = usePathname();
 
+  // Отключаем восстановление скролла браузером и принудительно ставим страницу в начало.
+  useEffect(() => {
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    // Повторяем после рендера, чтобы перебить возможное восстановление прокрутки.
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
   }, [pathname]);
 
   return (
