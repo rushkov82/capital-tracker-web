@@ -75,10 +75,17 @@ export default function AuthStatus() {
     };
   }, []);
 
-  const initial = useMemo(() => {
-    if (!user?.name) return "";
-    return user.name.trim().charAt(0).toUpperCase();
+  const displayName = useMemo(() => {
+    if (!user) return null;
+    const trimmed = (user.name ?? "").trim();
+    return trimmed || "Аккаунт";
   }, [user]);
+
+  const initial = useMemo(() => {
+    if (!user) return "";
+    const source = displayName ?? "";
+    return source.charAt(0).toUpperCase();
+  }, [user, displayName]);
 
   async function handleLogout() {
     try {
@@ -92,7 +99,7 @@ export default function AuthStatus() {
     window.location.href = "/app/overview";
   }
 
-  const label = loading ? "Загрузка..." : user ? "Аккаунт" : "Не авторизован";
+  const label = loading ? "Загрузка..." : user ? displayName ?? "Аккаунт" : "Не авторизован";
 
   return (
     <div ref={rootRef} className="relative shrink-0">
