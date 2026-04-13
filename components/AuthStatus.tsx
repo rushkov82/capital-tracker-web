@@ -106,7 +106,7 @@ export default function AuthStatus() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-[44px] w-full items-center gap-3 rounded-[14px] border border-[var(--border)] bg-[var(--card)] px-3 text-left"
+        className="flex h-[44px] w-full items-center gap-3 px-1 text-left"
       >
         <div className="flex h-[28px] w-[28px] shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-[var(--text-secondary)]">
           {user ? (

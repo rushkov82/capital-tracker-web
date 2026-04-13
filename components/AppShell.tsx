@@ -20,10 +20,7 @@ export default function AppShell({
       <div className="min-h-screen min-w-0 md:pl-[220px]">
         <CoreDataProvider>
           <div className="flex min-h-screen flex-col">
-            <div
-              className="fixed right-4 z-40 md:hidden"
-              style={{ top: "calc(7px + env(safe-area-inset-top, 0px))" }}
-            >
+            <div className="md:hidden px-4 pt-4">
               <AuthStatus />
             </div>
 
