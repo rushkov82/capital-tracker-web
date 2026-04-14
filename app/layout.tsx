@@ -41,6 +41,12 @@ export const metadata: Metadata = {
     description:
       "План накоплений, реальные действия и прогресс — в одном месте.",
   },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Capital Tracker",
+  },
 };
 
 export const viewport: Viewport = {

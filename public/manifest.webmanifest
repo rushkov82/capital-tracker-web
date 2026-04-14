@@ -1,0 +1,10 @@
+{
+  "name": "Capital Tracker",
+  "short_name": "CapTrack",
+  "start_url": "/app/overview",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#22c55e",
+  "icons": []
+}
