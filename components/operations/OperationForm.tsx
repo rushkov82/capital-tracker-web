@@ -331,6 +331,7 @@ function Segment({
       style={{
         background: active ? colorMap[color] : "transparent",
         color: active ? "#ffffff" : "var(--text-secondary)",
+        border: active ? "1px solid transparent" : "1px solid var(--border)",
         opacity: active ? 1 : 0.8,
       }}
     >
