@@ -81,8 +81,8 @@ export default function OperationForm({
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 min-w-0">
-      <div className="rounded-[14px] border border-[var(--border)] bg-[var(--card)] p-1">
-        <div className="grid grid-cols-4 gap-1">
+      <div>
+        <div className="grid grid-cols-4 gap-1.5">
           <Segment
             label="Пополнение"
             active={actionType === "income"}
@@ -145,9 +145,7 @@ export default function OperationForm({
         {actionType === "move" && (
           <>
             <div className="app-text-small">Внутреннее перемещение капитала</div>
-            <div className="app-text-small">
-              Перенос суммы между категориями без изменения общего капитала
-            </div>
+            <div className="app-text-small">Перенос суммы между категориями</div>
           </>
         )}
       </div>
@@ -329,7 +327,7 @@ function Segment({
     <button
       type="button"
       onClick={onClick}
-      className="flex h-[50px] w-full min-w-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[10px] px-0.5 text-[9px] font-medium leading-none transition-all duration-150 active:scale-[0.985] md:h-[42px] md:flex-row md:gap-1.5 md:px-1.5 md:text-[13px]"
+      className="flex h-[50px] w-full min-w-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[10px] px-1 text-[10px] font-medium leading-none transition-all duration-150 active:scale-[0.985] md:h-[42px] md:flex-row md:gap-1.5 md:px-1.5 md:text-[13px]"
       style={{
         background: active ? colorMap[color] : "transparent",
         color: active ? "#ffffff" : "var(--text-secondary)",
