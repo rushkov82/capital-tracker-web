@@ -169,9 +169,9 @@ export default function OperationForm({
         />
       </div>
 
-      <div className="grid gap-4 grid-cols-2">
-        {actionType === "move" ? (
-          <>
+      {actionType === "move" ? (
+        <>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1 min-w-0">
               <div className="app-form-row">
                 <label className="app-form-label">Из категории</label>
@@ -211,8 +211,24 @@ export default function OperationForm({
                 ))}
               </select>
             </div>
-          </>
-        ) : (
+          </div>
+
+          <div className="space-y-1 min-w-0">
+            <div className="app-form-row">
+              <label className="app-form-label">Дата</label>
+              <span className="app-form-hint">Когда была операция</span>
+            </div>
+
+            <input
+              type="date"
+              className="app-input app-input-mobile-safe app-date-input"
+              value={operationDate}
+              onChange={(e) => setOperationDate(e.target.value)}
+            />
+          </div>
+        </>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1 min-w-0">
             <div className="app-form-row">
               <label className="app-form-label">Категория</label>
@@ -235,22 +251,22 @@ export default function OperationForm({
               ))}
             </select>
           </div>
-        )}
 
-        <div className="space-y-1 min-w-0">
-          <div className="app-form-row">
-            <label className="app-form-label">Дата</label>
-            <span className="app-form-hint">Когда была операция</span>
+          <div className="space-y-1 min-w-0">
+            <div className="app-form-row">
+              <label className="app-form-label">Дата</label>
+              <span className="app-form-hint">Когда была операция</span>
+            </div>
+
+            <input
+              type="date"
+              className="app-input app-input-mobile-safe app-date-input"
+              value={operationDate}
+              onChange={(e) => setOperationDate(e.target.value)}
+            />
           </div>
-
-          <input
-            type="date"
-            className="app-input app-input-mobile-safe app-date-input"
-            value={operationDate}
-            onChange={(e) => setOperationDate(e.target.value)}
-          />
         </div>
-      </div>
+      )}
 
       <div className="space-y-1 min-w-0">
         <div className="app-form-row">
