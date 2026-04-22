@@ -105,7 +105,7 @@ export default function OperationForm({
             icon={RefreshCw}
           />
           <Segment
-            label="Перемещение"
+            label="Перенос"
             active={actionType === "move"}
             onClick={() => setActionType("move")}
             color="neutral"
@@ -180,7 +180,7 @@ export default function OperationForm({
                 value={fromAssetCategory}
                 onChange={(e) => setFromAssetCategory(e.target.value)}
               >
-                <option value="">Выбери категорию</option>
+                <option value="">Категория</option>
 
                 {availableCategories.map((category) => (
                   <option key={category} value={category}>
@@ -200,7 +200,7 @@ export default function OperationForm({
                 value={toAssetCategory}
                 onChange={(e) => setToAssetCategory(e.target.value)}
               >
-                <option value="">Выбери категорию</option>
+                <option value="">Категория</option>
 
                 {ASSET_CATEGORIES.map((category) => (
                   <option key={category} value={category}>
