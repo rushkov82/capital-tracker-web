@@ -82,7 +82,7 @@ export default function OperationForm({
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 min-w-0">
       <div className="rounded-[14px] border border-[var(--border)] bg-[var(--card)] p-1">
-        <div className="grid grid-cols-2 gap-1 md:grid-cols-4">
+        <div className="grid grid-cols-4 gap-1">
           <Segment
             label="Пополнение"
             active={actionType === "income"}
@@ -169,13 +169,12 @@ export default function OperationForm({
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-2">
         {actionType === "move" ? (
           <>
             <div className="space-y-1 min-w-0">
               <div className="app-form-row">
                 <label className="app-form-label">Из категории</label>
-                <span className="app-form-hint">Откуда переносим</span>
               </div>
 
               <select
@@ -196,7 +195,6 @@ export default function OperationForm({
             <div className="space-y-1 min-w-0">
               <div className="app-form-row">
                 <label className="app-form-label">В категорию</label>
-                <span className="app-form-hint">Куда переносим</span>
               </div>
 
               <select
@@ -315,7 +313,7 @@ function Segment({
     <button
       type="button"
       onClick={onClick}
-      className="flex h-[58px] w-full min-w-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[10px] px-1 text-[10px] font-medium leading-none transition-all duration-150 active:scale-[0.985] md:h-[42px] md:flex-row md:gap-2 md:px-2 md:text-[14px]"
+      className="flex h-[50px] w-full min-w-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[10px] px-0.5 text-[9px] font-medium leading-none transition-all duration-150 active:scale-[0.985] md:h-[42px] md:flex-row md:gap-1.5 md:px-1.5 md:text-[13px]"
       style={{
         background: active ? colorMap[color] : "transparent",
         color: active ? "#ffffff" : "var(--text-secondary)",
