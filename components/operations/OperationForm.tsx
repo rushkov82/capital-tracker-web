@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
-import { ArrowUpRight, Plus, RefreshCw } from "lucide-react";
+import { ArrowRightLeft, ArrowUpRight, Plus, RefreshCw } from "lucide-react";
 import { ASSET_CATEGORIES } from "@/lib/constants";
 
-export type OperationFormActionType = "income" | "expense" | "adjustment";
+export type OperationFormActionType =
+  | "income"
+  | "expense"
+  | "adjustment"
+  | "move";
 
 type OperationFormProps = {
   amount: string;
@@ -13,6 +17,10 @@ type OperationFormProps = {
   setComment: (value: string) => void;
   assetCategory: string;
   setAssetCategory: (value: string) => void;
+  fromAssetCategory: string;
+  setFromAssetCategory: (value: string) => void;
+  toAssetCategory: string;
+  setToAssetCategory: (value: string) => void;
   operationDate: string;
   setOperationDate: (value: string) => void;
   actionType: OperationFormActionType;
@@ -32,6 +40,10 @@ export default function OperationForm({
   setComment,
   assetCategory,
   setAssetCategory,
+  fromAssetCategory,
+  setFromAssetCategory,
+  toAssetCategory,
+  setToAssetCategory,
   operationDate,
   setOperationDate,
   actionType,
@@ -70,7 +82,7 @@ export default function OperationForm({
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 min-w-0">
       <div className="rounded-[14px] border border-[var(--border)] bg-[var(--card)] p-1">
-        <div className="grid grid-cols-3 gap-1">
+        <div className="grid grid-cols-2 gap-1 md:grid-cols-4">
           <Segment
             label="Пополнение"
             active={actionType === "income"}
@@ -91,6 +103,13 @@ export default function OperationForm({
             onClick={() => setActionType("adjustment")}
             color="info"
             icon={RefreshCw}
+          />
+          <Segment
+            label="Перемещение"
+            active={actionType === "move"}
+            onClick={() => setActionType("move")}
+            color="neutral"
+            icon={ArrowRightLeft}
           />
         </div>
       </div>
@@ -122,6 +141,15 @@ export default function OperationForm({
             </div>
           </>
         )}
+
+        {actionType === "move" && (
+          <>
+            <div className="app-text-small">Внутреннее перемещение капитала</div>
+            <div className="app-text-small">
+              Перенос суммы между категориями без изменения общего капитала
+            </div>
+          </>
+        )}
       </div>
 
       <div className="space-y-1 min-w-0">
@@ -142,28 +170,74 @@ export default function OperationForm({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-1 min-w-0">
-          <div className="app-form-row">
-            <label className="app-form-label">Категория</label>
-            <span className="app-form-hint">Куда относится сумма</span>
+        {actionType === "move" ? (
+          <>
+            <div className="space-y-1 min-w-0">
+              <div className="app-form-row">
+                <label className="app-form-label">Из категории</label>
+                <span className="app-form-hint">Откуда переносим</span>
+              </div>
+
+              <select
+                className="app-input app-select app-input-mobile-safe"
+                value={fromAssetCategory}
+                onChange={(e) => setFromAssetCategory(e.target.value)}
+              >
+                <option value="">Выбери категорию</option>
+
+                {availableCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1 min-w-0">
+              <div className="app-form-row">
+                <label className="app-form-label">В категорию</label>
+                <span className="app-form-hint">Куда переносим</span>
+              </div>
+
+              <select
+                className="app-input app-select app-input-mobile-safe"
+                value={toAssetCategory}
+                onChange={(e) => setToAssetCategory(e.target.value)}
+              >
+                <option value="">Выбери категорию</option>
+
+                {ASSET_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </>
+        ) : (
+          <div className="space-y-1 min-w-0">
+            <div className="app-form-row">
+              <label className="app-form-label">Категория</label>
+              <span className="app-form-hint">Куда относится сумма</span>
+            </div>
+
+            <select
+              className="app-input app-select app-input-mobile-safe"
+              value={assetCategory}
+              onChange={(e) => setAssetCategory(e.target.value)}
+            >
+              {actionType !== "income" && (
+                <option value="">Выбери существующую категорию</option>
+              )}
+
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
           </div>
-
-          <select
-            className="app-input app-select app-input-mobile-safe"
-            value={assetCategory}
-            onChange={(e) => setAssetCategory(e.target.value)}
-          >
-            {actionType !== "income" && (
-              <option value="">Выбери существующую категорию</option>
-            )}
-
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </div>
+        )}
 
         <div className="space-y-1 min-w-0">
           <div className="app-form-row">
@@ -227,13 +301,14 @@ function Segment({
   label: string;
   active: boolean;
   onClick: () => void;
-  color: "accent" | "danger" | "info";
+  color: "accent" | "danger" | "info" | "neutral";
   icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
 }) {
   const colorMap = {
     accent: "var(--accent)",
     danger: "var(--danger)",
     info: "var(--info)",
+    neutral: "var(--text-secondary)",
   };
 
   return (

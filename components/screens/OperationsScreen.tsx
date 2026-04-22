@@ -48,6 +48,10 @@ export default function OperationsScreen() {
       setComment={controller.setComment}
       assetCategory={controller.assetCategory}
       setAssetCategory={controller.setAssetCategory}
+      fromAssetCategory={controller.fromAssetCategory}
+      setFromAssetCategory={controller.setFromAssetCategory}
+      toAssetCategory={controller.toAssetCategory}
+      setToAssetCategory={controller.setToAssetCategory}
       operationDate={controller.operationDate}
       setOperationDate={controller.setOperationDate}
       actionType={controller.actionType}

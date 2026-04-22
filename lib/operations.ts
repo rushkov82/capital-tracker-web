@@ -18,6 +18,14 @@ type CreateOperationInput = {
   type: OperationType;
 };
 
+type CreateTransferInput = {
+  amount: number;
+  comment?: string | null;
+  operation_date?: string;
+  from_asset_category: string;
+  to_asset_category: string;
+};
+
 type UpdateOperationInput = {
   amount?: number;
   comment?: string | null;
@@ -57,6 +65,23 @@ export async function createOperation(
   });
 
   return parseResponse<Operation>(response);
+}
+
+export async function createTransfer(
+  input: CreateTransferInput
+): Promise<{ ok: true }> {
+  const response = await fetch("/api/operations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      action: "move",
+      ...input,
+    }),
+  });
+
+  return parseResponse<{ ok: true }>(response);
 }
 
 export async function updateOperation(

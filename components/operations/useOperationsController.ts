@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  createTransfer,
   createOperation,
   deleteOperation,
   updateOperation,
@@ -48,6 +49,8 @@ export function useOperationsController() {
   const [amount, setAmount] = useState("");
   const [comment, setComment] = useState("");
   const [assetCategory, setAssetCategory] = useState("");
+  const [fromAssetCategory, setFromAssetCategory] = useState("");
+  const [toAssetCategory, setToAssetCategory] = useState("");
   const [operationDate, setOperationDate] = useState("");
   const [actionType, setActionType] =
     useState<OperationFormActionType>("income");
@@ -147,6 +150,8 @@ export function useOperationsController() {
     setAmount("");
     setComment("");
     setAssetCategory("");
+    setFromAssetCategory("");
+    setToAssetCategory("");
     setOperationDate(new Date().toISOString().slice(0, 10));
     setActionType("income");
   }
@@ -228,6 +233,46 @@ export function useOperationsController() {
     return true;
   }
 
+  function validateMoveCategories() {
+    if (!fromAssetCategory) {
+      showToast({
+        type: "error",
+        title: "Ошибка",
+        description: "Выберите исходную категорию",
+      });
+      return false;
+    }
+
+    if (!toAssetCategory) {
+      showToast({
+        type: "error",
+        title: "Ошибка",
+        description: "Выберите целевую категорию",
+      });
+      return false;
+    }
+
+    if (fromAssetCategory === toAssetCategory) {
+      showToast({
+        type: "error",
+        title: "Ошибка",
+        description: "Категории перемещения должны отличаться",
+      });
+      return false;
+    }
+
+    if (!availableCategories.includes(fromAssetCategory)) {
+      showToast({
+        type: "error",
+        title: "Ошибка",
+        description: "Исходная категория сейчас пуста",
+      });
+      return false;
+    }
+
+    return true;
+  }
+
   function getEditBaseBalance(nextCategory: string) {
     const currentBalance = categoryBalances[nextCategory] || 0;
 
@@ -268,6 +313,61 @@ export function useOperationsController() {
     if (!validateBase(rawValue)) return;
 
     const createType = actionType;
+
+    if (createType === "move") {
+      if (!validateMoveCategories()) return;
+
+      const normalizedAmount = Math.abs(rawValue);
+      const sourceBalance = categoryBalances[fromAssetCategory] || 0;
+
+      if (sourceBalance - normalizedAmount < 0) {
+        showToast({
+          type: "error",
+          title: "Ошибка",
+          description:
+            "В выбранной исходной категории недостаточно средств для перемещения",
+        });
+        return;
+      }
+
+      if (storageMode === "local") {
+        showToast({
+          type: "error",
+          title: "Недоступно",
+          description:
+            "Перемещение пока доступно только для авторизованного режима",
+        });
+        return;
+      }
+
+      try {
+        await createTransfer({
+          amount: normalizedAmount,
+          comment: comment.trim() || null,
+          operation_date: operationDate,
+          from_asset_category: fromAssetCategory,
+          to_asset_category: toAssetCategory,
+        });
+
+        showToast({
+          type: "success",
+          title: "Сохранено",
+          description: "Перемещение добавлено",
+        });
+
+        resetForm();
+        await refreshOperations();
+      } catch {
+        showToast({
+          type: "error",
+          title: "Ошибка",
+          description: "Не удалось сохранить перемещение",
+        });
+      }
+
+      return;
+    }
+
     const normalizedAmount =
       createType === "adjustment" ? rawValue : Math.abs(rawValue);
     const signedAmount = getSignedAmount({
@@ -475,6 +575,10 @@ export function useOperationsController() {
     setComment,
     assetCategory,
     setAssetCategory,
+    fromAssetCategory,
+    setFromAssetCategory,
+    toAssetCategory,
+    setToAssetCategory,
     operationDate,
     setOperationDate,
     actionType,

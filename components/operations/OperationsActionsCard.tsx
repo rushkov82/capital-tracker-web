@@ -11,6 +11,10 @@ type OperationsActionsCardProps = {
   setComment: (value: string) => void;
   assetCategory: string;
   setAssetCategory: (value: string) => void;
+  fromAssetCategory: string;
+  setFromAssetCategory: (value: string) => void;
+  toAssetCategory: string;
+  setToAssetCategory: (value: string) => void;
   operationDate: string;
   setOperationDate: (value: string) => void;
   actionType: OperationFormActionType;
@@ -28,6 +32,10 @@ export default function OperationsActionsCard({
   setComment,
   assetCategory,
   setAssetCategory,
+  fromAssetCategory,
+  setFromAssetCategory,
+  toAssetCategory,
+  setToAssetCategory,
   operationDate,
   setOperationDate,
   actionType,
@@ -59,6 +67,10 @@ export default function OperationsActionsCard({
             setComment={setComment}
             assetCategory={assetCategory}
             setAssetCategory={setAssetCategory}
+            fromAssetCategory={fromAssetCategory}
+            setFromAssetCategory={setFromAssetCategory}
+            toAssetCategory={toAssetCategory}
+            setToAssetCategory={setToAssetCategory}
             operationDate={operationDate}
             setOperationDate={setOperationDate}
             actionType={actionType}

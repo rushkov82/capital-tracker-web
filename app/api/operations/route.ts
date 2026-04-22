@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
+import { randomUUID } from "node:crypto";
+import { pool, query } from "@/lib/db";
 import { getCurrentUser } from "@/lib/current-user";
 
 function formatDateOnly(value: unknown) {
@@ -77,9 +78,124 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
+    const action = body.action;
     const amount = Number(body.amount);
     const comment = body.comment ?? null;
     const operation_date = body.operation_date ?? formatDateOnly(new Date());
+
+    if (action === "move") {
+      const fromCategory =
+        typeof body.from_asset_category === "string"
+          ? body.from_asset_category.trim()
+          : "";
+      const toCategory =
+        typeof body.to_asset_category === "string"
+          ? body.to_asset_category.trim()
+          : "";
+
+      if (!amount || Number.isNaN(amount)) {
+        return NextResponse.json(
+          { error: "Некорректная сумма" },
+          { status: 400 }
+        );
+      }
+
+      if (!fromCategory) {
+        return NextResponse.json(
+          { error: "Выберите исходную категорию" },
+          { status: 400 }
+        );
+      }
+
+      if (!toCategory) {
+        return NextResponse.json(
+          { error: "Выберите целевую категорию" },
+          { status: 400 }
+        );
+      }
+
+      if (fromCategory === toCategory) {
+        return NextResponse.json(
+          { error: "Категории перемещения должны отличаться" },
+          { status: 400 }
+        );
+      }
+
+      const client = await pool.connect();
+
+      try {
+        await client.query("BEGIN");
+
+        const balanceResult = await client.query<{ balance: string | number }>(
+          `
+          SELECT COALESCE(
+            SUM(
+              CASE
+                WHEN type = 'expense' THEN -amount
+                ELSE amount
+              END
+            ),
+            0
+          ) AS balance
+          FROM operations
+          WHERE user_id = $1
+            AND asset_category = $2
+          `,
+          [user.id, fromCategory]
+        );
+
+        const currentBalance = Number(balanceResult.rows[0]?.balance ?? 0);
+
+        if (currentBalance < amount) {
+          await client.query("ROLLBACK");
+          return NextResponse.json(
+            {
+              error:
+                "В выбранной исходной категории недостаточно средств для перемещения",
+            },
+            { status: 400 }
+          );
+        }
+
+        const transferGroupId = randomUUID();
+
+        await client.query(
+          `
+          INSERT INTO operations (
+            user_id,
+            amount,
+            comment,
+            operation_date,
+            asset_category,
+            type,
+            transfer_group_id
+          )
+          VALUES
+            ($1, $2, $3, $4, $5, 'expense', $6),
+            ($1, $2, $3, $4, $7, 'income', $6)
+          `,
+          [
+            user.id,
+            amount,
+            comment,
+            operation_date,
+            fromCategory,
+            transferGroupId,
+            toCategory,
+          ]
+        );
+
+        await client.query("COMMIT");
+
+        return NextResponse.json({ ok: true }, { status: 201 });
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+    }
+
     const asset_category =
       typeof body.asset_category === "string" && body.asset_category.trim()
         ? body.asset_category.trim()
