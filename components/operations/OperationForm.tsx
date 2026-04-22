@@ -82,13 +82,20 @@ export default function OperationForm({
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 min-w-0">
       <div>
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-2 gap-2">
           <Segment
             label="Пополнение"
             active={actionType === "income"}
             onClick={() => setActionType("income")}
             color="accent"
             icon={Plus}
+          />
+          <Segment
+            label="Перенос"
+            active={actionType === "move"}
+            onClick={() => setActionType("move")}
+            color="neutral"
+            icon={ArrowRightLeft}
           />
           <Segment
             label="Вывод"
@@ -103,13 +110,6 @@ export default function OperationForm({
             onClick={() => setActionType("adjustment")}
             color="info"
             icon={RefreshCw}
-          />
-          <Segment
-            label="Перенос"
-            active={actionType === "move"}
-            onClick={() => setActionType("move")}
-            color="neutral"
-            icon={ArrowRightLeft}
           />
         </div>
       </div>
@@ -327,16 +327,16 @@ function Segment({
     <button
       type="button"
       onClick={onClick}
-      className="flex h-[50px] w-full min-w-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[10px] px-1 text-[10px] font-medium leading-none transition-all duration-150 active:scale-[0.985] md:h-[42px] md:flex-row md:gap-1.5 md:px-1.5 md:text-[13px]"
+      className="flex h-[56px] w-full min-w-0 flex-row items-center justify-center gap-2 overflow-hidden rounded-[10px] px-3 text-[12px] font-medium leading-none transition-all duration-150 active:scale-[0.985] md:h-[48px] md:gap-2 md:px-2 md:text-[15px]"
       style={{
         background: active ? colorMap[color] : "transparent",
         color: active ? "#ffffff" : "var(--text-secondary)",
         border: active ? "1px solid transparent" : "1px solid var(--border)",
         opacity: active ? 1 : 0.8,
       }}
-    >
+      >
       <span className="shrink-0">
-        <Icon size={18} strokeWidth={2} />
+        <Icon size={20} strokeWidth={2} />
       </span>
       <span className="min-w-0 truncate">{label}</span>
     </button>
