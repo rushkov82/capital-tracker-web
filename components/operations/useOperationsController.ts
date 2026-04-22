@@ -10,6 +10,7 @@ import {
 } from "@/lib/operations";
 import {
   createDemoOperation,
+  createDemoTransfer,
   deleteDemoOperation,
   updateDemoOperation,
 } from "@/lib/demo-storage";
@@ -330,39 +331,41 @@ export function useOperationsController() {
         return;
       }
 
-      if (storageMode === "local") {
-        showToast({
-          type: "error",
-          title: "Недоступно",
-          description:
-            "Перемещение пока доступно только для авторизованного режима",
-        });
-        return;
-      }
-
       try {
-        await createTransfer({
-          amount: normalizedAmount,
-          comment: comment.trim() || null,
-          operation_date: operationDate,
-          from_asset_category: fromAssetCategory,
-          to_asset_category: toAssetCategory,
-        });
+        if (storageMode === "local") {
+          createDemoTransfer({
+            amount: normalizedAmount,
+            comment: comment.trim() || null,
+            operation_date: operationDate,
+            from_asset_category: fromAssetCategory,
+            to_asset_category: toAssetCategory,
+          });
+        } else {
+          await createTransfer({
+            amount: normalizedAmount,
+            comment: comment.trim() || null,
+            operation_date: operationDate,
+            from_asset_category: fromAssetCategory,
+            to_asset_category: toAssetCategory,
+          });
 
-        showToast({
-          type: "success",
-          title: "Сохранено",
-          description: "Перемещение добавлено",
-        });
+          showToast({
+            type: "success",
+            title: "Сохранено",
+            description: "Перемещение добавлено",
+          });
+        }
 
         resetForm();
         await refreshOperations();
       } catch {
-        showToast({
-          type: "error",
-          title: "Ошибка",
-          description: "Не удалось сохранить перемещение",
-        });
+        if (storageMode !== "local") {
+          showToast({
+            type: "error",
+            title: "Ошибка",
+            description: "Не удалось сохранить перемещение",
+          });
+        }
       }
 
       return;

@@ -119,15 +119,21 @@ type DemoOperationUpdateInput = {
   type?: OperationType;
 };
 
+type DemoTransferInput = {
+  amount: number;
+  comment?: string | null;
+  operation_date?: string;
+  from_asset_category: string;
+  to_asset_category: string;
+};
+
 function todayString() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function createDemoOperation(input: DemoOperationInput): Operation {
-  const operations = readDemoOperations();
-
-  const operation: Operation = {
-    id: String(Date.now()),
+function createDemoOperationRecord(input: DemoOperationInput): Operation {
+  return {
+    id: `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`,
     amount: input.amount,
     comment: input.comment ?? null,
     operation_date: input.operation_date || todayString(),
@@ -135,9 +141,40 @@ export function createDemoOperation(input: DemoOperationInput): Operation {
     created_at: new Date().toISOString(),
     type: input.type,
   };
+}
+
+export function createDemoOperation(input: DemoOperationInput): Operation {
+  const operations = readDemoOperations();
+  const operation = createDemoOperationRecord(input);
 
   writeDemoOperations([operation, ...operations]);
   return operation;
+}
+
+export function createDemoTransfer(input: DemoTransferInput): Operation[] {
+  const operations = readDemoOperations();
+  const operationDate = input.operation_date || todayString();
+  const comment = input.comment ?? null;
+
+  const expenseOperation = createDemoOperationRecord({
+    amount: input.amount,
+    comment,
+    operation_date: operationDate,
+    asset_category: input.from_asset_category,
+    type: "expense",
+  });
+
+  const incomeOperation = createDemoOperationRecord({
+    amount: input.amount,
+    comment,
+    operation_date: operationDate,
+    asset_category: input.to_asset_category,
+    type: "income",
+  });
+
+  writeDemoOperations([incomeOperation, expenseOperation, ...operations]);
+
+  return [expenseOperation, incomeOperation];
 }
 
 export function updateDemoOperation(
