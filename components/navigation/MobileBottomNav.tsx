@@ -1,5 +1,6 @@
 "use client";
 
+import type { MouseEvent } from "react";
 import Link from "next/link";
 import { navItems } from "@/components/navigation/navItems";
 
@@ -14,6 +15,20 @@ export default function MobileBottomNav({
 }: MobileBottomNavProps) {
   function isActive(href: string) {
     return href === "/" ? pathname === "/" : pathname === href;
+  }
+
+  function scrollToTop() {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }
+
+  function handleRepeatTap(href: string, event?: MouseEvent<HTMLElement>) {
+    if (!isActive(href)) {
+      return false;
+    }
+
+    event?.preventDefault();
+    scrollToTop();
+    return true;
   }
 
   return (
@@ -44,7 +59,13 @@ export default function MobileBottomNav({
             <button
               key={item.href}
               type="button"
-              onClick={() => onNavigate(item.href)}
+              onClick={(event) => {
+                if (handleRepeatTap(item.href, event)) {
+                  return;
+                }
+
+                onNavigate(item.href);
+              }}
               className="flex min-h-[63px] min-w-0 items-center justify-center px-1 pb-[13px] pt-[8px] transition-all"
               style={{
                 color: active ? "var(--accent)" : "var(--text-primary)",
@@ -56,6 +77,9 @@ export default function MobileBottomNav({
             <Link
               key={item.href}
               href={item.href}
+              onClick={(event) => {
+                handleRepeatTap(item.href, event);
+              }}
               className="flex min-h-[63px] min-w-0 items-center justify-center px-1 pb-[13px] pt-[8px] transition-all"
               style={{
                 color: active ? "var(--accent)" : "var(--text-primary)",
