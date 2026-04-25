@@ -7,6 +7,7 @@ export default function OverviewScreen() {
   const {
     isLoading,
     totalCapital,
+    categoryDistribution,
     monthlyPlan,
     currentMonthFact,
     remainingAmount,
@@ -41,6 +42,7 @@ export default function OverviewScreen() {
   return (
     <OverviewScreenView
       totalCapital={totalCapital}
+      categoryDistribution={categoryDistribution}
       monthlyPlan={monthlyPlan}
       currentMonthFact={currentMonthFact}
       remainingAmount={remainingAmount}

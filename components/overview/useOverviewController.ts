@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { formatNumber } from "@/lib/calculations";
 import {
+  buildStructureFromOperations,
   buildRecentOperations,
   calculateTotalCapital,
 } from "@/lib/operations-helpers";
@@ -25,6 +26,12 @@ export function useOverviewController() {
 
   const totalCapital = useMemo(() => {
     return calculateTotalCapital(operations);
+  }, [operations]);
+
+  const categoryDistribution = useMemo(() => {
+    return buildStructureFromOperations(operations).filter(
+      (item) => item.amount > 0
+    );
   }, [operations]);
 
   const monthlyPlan = Number(plan?.monthlyContribution || 0);
@@ -98,6 +105,7 @@ export function useOverviewController() {
   return {
     isLoading,
     totalCapital,
+    categoryDistribution,
     monthlyPlan,
     currentMonthFact,
     remainingAmount,

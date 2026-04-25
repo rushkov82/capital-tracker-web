@@ -1,6 +1,7 @@
 "use client";
 
 import OverviewHeroCard from "@/components/overview/OverviewHeroCard";
+import OverviewCategoryDistributionCard from "@/components/overview/OverviewCategoryDistributionCard";
 import OverviewMonthPlanCard from "@/components/overview/OverviewMonthPlanCard";
 import OverviewForecastCard from "@/components/overview/OverviewForecastCard";
 import OverviewActionHintCard from "@/components/overview/OverviewActionHintCard";
@@ -9,9 +10,11 @@ import OverviewDynamicsCard from "@/components/overview/OverviewDynamicsCard";
 import AuthStatus from "@/components/AuthStatus";
 import { formatNumber } from "@/lib/calculations";
 import type { Operation } from "@/lib/operations";
+import type { StructureItem } from "@/lib/operations-helpers";
 
 type OverviewScreenViewProps = {
   totalCapital: number;
+  categoryDistribution: StructureItem[];
   monthlyPlan: number;
   currentMonthFact: number;
   remainingAmount: number;
@@ -34,6 +37,7 @@ type OverviewScreenViewProps = {
 
 export default function OverviewScreenView({
   totalCapital,
+  categoryDistribution,
   monthlyPlan,
   currentMonthFact,
   remainingAmount,
@@ -62,12 +66,20 @@ export default function OverviewScreenView({
         </div>
       </div>
 
-      <div className="grid items-stretch gap-4 xl:grid-cols-5">
+      <div className="grid items-stretch gap-4 xl:grid-cols-6">
         <div className="xl:col-span-1">
           <OverviewHeroCard
             totalCapital={totalCapital}
             timeProgressPercent={timeStats.progressPercent}
             statusText={heroStatusText}
+            formatNumber={formatNumber}
+          />
+        </div>
+
+        <div className="xl:col-span-1">
+          <OverviewCategoryDistributionCard
+            items={categoryDistribution}
+            totalCapital={totalCapital}
             formatNumber={formatNumber}
           />
         </div>
