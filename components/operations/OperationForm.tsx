@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { ArrowRightLeft, ArrowUpRight, Plus, RefreshCw } from "lucide-react";
 import { ASSET_CATEGORIES } from "@/lib/constants";
+import { formatNumber } from "@/lib/calculations";
 
 export type OperationFormActionType =
   | "income"
@@ -55,7 +56,7 @@ export default function OperationForm({
   hideActions = false,
   availableCategories = [],
 }: OperationFormProps) {
-  const amountHint = actionType === "adjustment" ? "Плюс или минус" : "₽";
+  const amountHint = actionType === "adjustment" ? "Всего в категории" : "₽";
 
   const categories =
     actionType === "income"
@@ -77,6 +78,28 @@ export default function OperationForm({
     if (isDesktopLike) {
       e.target.select();
     }
+  }
+
+  const amountDisplayValue = useMemo(() => {
+    if (actionType !== "adjustment") {
+      return amount;
+    }
+
+    if (!amount) {
+      return "";
+    }
+
+    return formatNumber(Number(amount));
+  }, [actionType, amount]);
+
+  function handleAmountChange(value: string) {
+    if (actionType !== "adjustment") {
+      setAmount(value);
+      return;
+    }
+
+    const digitsOnly = value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+    setAmount(digitsOnly);
   }
 
   return (
@@ -158,11 +181,11 @@ export default function OperationForm({
 
         <input
           className="app-input app-input-mobile-safe"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          value={amountDisplayValue}
+          onChange={(e) => handleAmountChange(e.target.value)}
           onFocus={handleAmountFocus}
           placeholder=""
-          inputMode="text"
+          inputMode={actionType === "adjustment" ? "numeric" : "text"}
           autoComplete="off"
         />
       </div>

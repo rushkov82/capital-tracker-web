@@ -106,6 +106,18 @@ export function useOperationsController() {
       .sort((a, b) => a.localeCompare(b, "ru"));
   }, [categoryBalances]);
 
+  useEffect(() => {
+    if (actionType !== "adjustment") return;
+
+    if (!assetCategory) {
+      setAmount("");
+      return;
+    }
+
+    const currentBalance = Math.max(0, categoryBalances[assetCategory] || 0);
+    setAmount(String(currentBalance));
+  }, [actionType, assetCategory, categoryBalances]);
+
   const filteredOperations = useMemo(() => {
     let result = [...normalized];
 
@@ -187,8 +199,10 @@ export function useOperationsController() {
     setDeleteTarget(operation);
   }
 
-  function validateBase(rawValue: number) {
-    if (!rawValue || Number.isNaN(rawValue)) {
+  function validateBase(rawValue: number, options?: { allowZero?: boolean }) {
+    const allowZero = options?.allowZero ?? false;
+
+    if (Number.isNaN(rawValue) || (!allowZero && rawValue === 0)) {
       showToast({
         type: "error",
         title: "Ошибка",
@@ -311,7 +325,6 @@ export function useOperationsController() {
 
   async function handleQuickCreate() {
     const rawValue = Number(amount);
-    if (!validateBase(rawValue)) return;
 
     const createType = actionType;
 
@@ -371,8 +384,67 @@ export function useOperationsController() {
       return;
     }
 
-    const normalizedAmount =
-      createType === "adjustment" ? rawValue : Math.abs(rawValue);
+    if (createType === "adjustment") {
+      if (!validateCategory(true, availableCategories)) return;
+      if (!validateBase(rawValue, { allowZero: true })) return;
+
+      const currentBalance = assetCategory
+        ? Math.max(0, categoryBalances[assetCategory] || 0)
+        : 0;
+      const nextBalance = Math.max(0, rawValue);
+      const adjustmentDelta = nextBalance - currentBalance;
+
+      if (adjustmentDelta === 0) {
+        return;
+      }
+
+      try {
+        if (storageMode === "local") {
+          createDemoOperation({
+            amount: adjustmentDelta,
+            comment: comment.trim() || null,
+            operation_date: operationDate,
+            asset_category: assetCategory || null,
+            type: createType,
+          });
+        } else {
+          await createOperation({
+            amount: adjustmentDelta,
+            comment: comment.trim() || null,
+            operation_date: operationDate,
+            asset_category: assetCategory || null,
+            type: createType,
+          });
+        }
+
+        if (storageMode !== "local") {
+          showToast({
+            type: "success",
+            title: "Сохранено",
+            description: "Операция добавлена",
+          });
+        }
+
+        resetForm();
+        await refreshOperations();
+      } catch {
+        if (storageMode === "local") {
+          return;
+        }
+
+        showToast({
+          type: "error",
+          title: "Ошибка",
+          description: "Не удалось сохранить операцию",
+        });
+      }
+
+      return;
+    }
+
+    if (!validateBase(rawValue)) return;
+
+    const normalizedAmount = Math.abs(rawValue);
     const signedAmount = getSignedAmount({
       type: createType,
       amount: normalizedAmount,
